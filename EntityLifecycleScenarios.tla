@@ -1,12 +1,12 @@
 --------------------- MODULE EntityLifecycleScenarios ---------------------
-(* A finite regression scenario using the actual lifecycle actions.       *)
-(* Fairness belongs ONLY to this test driver: it makes a disabled step     *)
-(* fail EventuallyFinished instead of silently passing state invariants.  *)
+(* A finite regression scenario using the actual lifecycle actions.      *)
+(* Fairness belongs ONLY to this test driver: it makes a disabled step   *)
+(* fail EventuallyFinished instead of silently passing state invariants. *)
 EXTENDS EntityLifecycle, Naturals
 
 CONSTANTS Source, FirstCopy, SecondCopy
-ASSUME /\ Objects = {Source, FirstCopy, SecondCopy}
-       /\ Cardinality(Objects) = 3
+ASSUME /\ Entities = {Source, FirstCopy, SecondCopy}
+       /\ Cardinality(Entities) = 3
        /\ Cardinality(Identities) = 2
 
 VARIABLE step
@@ -55,10 +55,10 @@ ScenarioOK ==
     /\ step \in 0..17
     /\ <<entityState[Source], entityState[FirstCopy],
          entityState[SecondCopy]>> = ExpectedStates
-    /\ allocated = (CASE step = 0 -> {}
+    /\ createdEntities = (CASE step = 0 -> {}
                       [] step <= 3 -> {Source}
                       [] step <= 12 -> {Source, FirstCopy}
-                      [] OTHER -> Objects)
+                      [] OTHER -> Entities)
     /\ (step >= 6 => identity[Source] # identity[FirstCopy])
     /\ (step >= 13 => identity[Source] = identity[SecondCopy])
     /\ (step \in {9, 10} => PendingRemoval = {Source})
@@ -67,16 +67,16 @@ ScenarioOK ==
     /\ (step >= 12 => Source \notin Context)
     /\ (step = 17 => SecondCopy \notin Context)
 
-(* These are restrictions of the successful-operation abstraction, not    *)
-(* assertions about whether a Java method call can physically be made.    *)
+(* These are restrictions of the successful-operation abstraction, not   *)
+(* assertions about whether a Java method call can physically be made.   *)
 ExcludedCalls ==
-    \A e \in allocated :
+    \A e \in createdEntities :
         /\ (entityState[e] # "managed" => ~ENABLED Refresh(e))
         /\ (entityState[e] = "detached" =>
                /\ ~ENABLED Persist(e)
                /\ ~ENABLED Remove(e))
         /\ (entityState[e] = "removed" =>
-               ~ENABLED (\E target \in Objects : Merge(e, target)))
+               ~ENABLED (\E target \in Entities : Merge(e, target)))
         /\ (entityState[e] = "managed" =>
-               \A target \in Objects \ {e} : ~ENABLED Merge(e, target))
+               \A target \in Entities \ {e} : ~ENABLED Merge(e, target))
 ===========================================================================

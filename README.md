@@ -2,11 +2,13 @@
 
 A small mathematical model of the entity lifecycle in one persistence context, based on [Jakarta Persistence 4.0-M4, section 3.6](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a1060). It includes an annotated specification, executable model-checking scenarios, and a proof checked by the TLA+ Proof System (TLAPS).
 
-The model describes `persist`, `remove`, `detach`, `refresh`, and `merge`. It distinguishes a Java object's identity from its persistent identity, so a detached object and its managed copy can represent the same database record.
+The model describes `persist`, `remove`, `detach`, `refresh`, and `merge`. It distinguishes a Java entity's identity from its persistent identity, so a detached entity and its managed copy can represent the same database record.
+
+Here, **entities** means Java entity instances. `Entities` is the set of possible entities, and `createdEntities` records which ones have been created so far. Two distinct entities can share a persistent identity.
 
 ## What this project does
 
-TLA+ describes a system as a sequence of snapshots and rules for moving between them. Here, each snapshot records which objects exist, their lifecycle states, and their persistent identities. An operation describes an allowed transition between two snapshots.
+TLA+ describes a system as a sequence of snapshots and rules for moving between them. Here, each snapshot records which entities exist, their lifecycle states, and their persistent identities. An operation describes an allowed transition between two snapshots.
 
 | Entity state | Persistent identity | Associated with this context | Removal pending |
 | --- | --- | --- | --- |
@@ -15,11 +17,11 @@ TLA+ describes a system as a sequence of snapshots and rules for moving between 
 | Detached | Yes | No | No |
 | Removed | Yes | Yes | Yes |
 
-For example, merging a detached object representing `Customer/42` returns a different, managed object representing `Customer/42`. The original object remains detached. Merging it again can return the same managed target.
+For example, merging a detached entity representing `Customer/42` returns a different, managed entity representing `Customer/42`. The original entity remains detached. Merging it again can return the same managed target.
 
 There are two ways to verify the model:
 
-- **TLC model checking:** explore all reachable snapshots for specific, finite sets of objects and identities, looking for a violation of the stated properties.
+- **TLC model checking:** explore all reachable snapshots for specific, finite sets of entities and identities, looking for a violation of the stated properties.
 - **TLAPS proof checking:** check an inductive argument that the properties hold for any sets satisfying the model's assumptions. First establish the rules initially, then show that every allowed operation preserves them.
 
 Neither tool runs Java code or connects to a database. Verification applies to the mathematical model; it does not certify a persistence provider or establish full Jakarta Persistence conformance.
@@ -30,7 +32,7 @@ Neither tool runs Java code or connects to a database. Verification applies to t
 | --- | --- |
 | [EntityLifecycle.tla](EntityLifecycle.tla) | The model, with a notation guide and explanations of the data, rules, and operations. Start here. |
 | [EntityLifecycle_proof.tla](EntityLifecycle_proof.tla) | The inductive proof, with explanations of each claim and the proof notation. |
-| [EntityLifecycle.cfg](EntityLifecycle.cfg) | TLC settings for three object slots and two persistent identities. |
+| [EntityLifecycle.cfg](EntityLifecycle.cfg) | TLC settings for three possible entities and two persistent identities. |
 | [EntityLifecycleScenarios.tla](EntityLifecycleScenarios.tla) | A 17-operation sequence exercising lifecycle changes, ignored calls, and merge behavior. |
 | [EntityLifecycleScenarios.cfg](EntityLifecycleScenarios.cfg) | TLC settings for the scenario checks. |
 
@@ -38,9 +40,9 @@ Neither tool runs Java code or connects to a database. Verification applies to t
 
 The proof establishes three main claims:
 
-1. **Consistency always holds (`ELCorrect`).** Objects have permitted states and identities. An allocated object has no persistent identity exactly when it is new. Two different objects associated with the context cannot have the same persistent identity; this includes objects marked for removal.
-2. **Detached objects stay detached (`ELDetachedCorrect`).** Within the modeled operations, a detached source never becomes managed itself, including when passed to merge.
-3. **Merge preserves its source (`ELMergeSourceUnchanged`).** Merge leaves the source's lifecycle state and persistent identity unchanged. For a new or detached source, the returned target is a different object.
+1. **Consistency always holds (`ELCorrect`).** Entities have permitted states and identities. A created entity has no persistent identity exactly when it is new. Two different entities associated with the context cannot have the same persistent identity; this includes entities marked for removal.
+2. **Detached entities stay detached (`ELDetachedCorrect`).** Within the modeled operations, a detached source never becomes managed itself, including when passed to merge.
+3. **Merge preserves its source (`ELMergeSourceUnchanged`).** Merge leaves the source's lifecycle state and persistent identity unchanged. For a new or detached source, the returned target is a different entity.
 
 The scenario checks exercise persist–remove–persist, detachment, cancellation of pending removal, merge of a new source, merge of a detached source into both a fresh and an existing managed target, and specified no-op cases. The test driver requires the sequence to finish, so an accidentally disabled operation cannot make the checks pass without being exercised.
 
@@ -65,7 +67,7 @@ java -XX:+UseParallelGC -Xmx512m -cp .tools/tla2tools.jar tlc2.TLC EntityLifecyc
 java -XX:+UseParallelGC -Xmx512m -cp .tools/tla2tools.jar tlc2.TLC EntityLifecycleScenarios
 ```
 
-Both commands should report `Model checking completed. No error has been found.` TLC stores generated data under `states/`, which is ignored by Git. Change the constant sets in the configuration files to explore other model sizes; the scenario configuration assumes exactly three object slots and two identities.
+Both commands should report `Model checking completed. No error has been found.` TLC stores generated data under `states/`, which is ignored by Git. Change the constant sets in the configuration files to explore other model sizes; the scenario configuration assumes exactly three possible entities and two identities.
 
 ### Proof checking with TLAPS
 
@@ -91,11 +93,11 @@ Tools used: Java 25.0.2; TLC build `2026.11.06.222357` (`d8fb231`, v1.8.0 prerel
 
 ## Model boundaries
 
-The model covers successful lifecycle effects in one persistence context. It leaves out entity field values, database contents, transactions, exception timing, cascading, versions, concurrent access, and context closure. Refresh therefore leaves the modeled snapshot unchanged; flush and lock have no modeled actions. Removed objects are marked as pending removal, without modeling the eventual database deletion.
+The model covers successful lifecycle effects in one persistence context. It leaves out entity field values, database contents, transactions, exception timing, cascading, versions, concurrent access, and context closure. Refresh therefore leaves the modeled snapshot unchanged; flush and lock have no modeled actions. Removed entities are marked as pending removal, without modeling the eventual database deletion.
 
-Object slots and identities are finite resources. Creating an object or a managed copy needs an unused slot; assigning a new persistent identity needs an unused identity. Exhaustion disables the corresponding action and does not represent a JPA exception. Identity assignment is atomic and identities are never reused.
+The model permits a finite number of entities and persistent identities. Creating an entity or a managed copy is possible only until the entity limit is reached; assigning a new persistent identity needs an unused identity. Reaching either limit disables the corresponding action and does not represent a JPA exception. Identity assignment is atomic and identities are never reused.
 
-Merging a detached source whose identity is represented by a removed object in the context is excluded from the successful-operation subset. The model also does not track the portability restriction on reusing a removed object after detachment.
+Merging a detached source whose identity is represented by a removed entity in the context is excluded from the successful-operation subset. The model also does not track the portability restriction on reusing a removed entity after detachment.
 
 The claims concern safety: which states and transitions are permitted. The lifecycle specification allows executions to pause indefinitely and does not require an eventual flush or commit. Only the scenario driver adds a progress requirement to ensure its prescribed operations are exercised.
 
