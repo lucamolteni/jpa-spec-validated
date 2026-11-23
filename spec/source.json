@@ -1,0 +1,51 @@
+{
+  "edition": "Jakarta Persistence 4.0-M4, May 25, 2026 (DRAFT)",
+  "url": "https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html",
+  "section": "3.6",
+  "anchor": "a1929",
+  "retrieved": "2026-11-23",
+  "full_document_sha256": "a31cea22839117fee385e74761e9d4f4ee27b29aa93928c436c0a7c137123b7b",
+  "fragments": {
+    "spec/lifecycle-4.0-M4.html": "1db918b2f9fb85e58529f28d57e67991181cf69860c8d039b577b5a0264e4387",
+    "spec/notice.html": "5201fc99b9e8721f370d99b1939a0d8d68aa684d964cc5bdc7783986578d3c0e",
+    "spec/entity-class-4.0-M4.html": "fb903d4e1acb19c49e096642fdd544ccd96faecb4921bbe46539136f3339ee29",
+    "spec/value-types-4.0-M4.html": "7c93805b86d33a30bf68e3a72a7e7a3a036f82e07bdc6f36e650f3740c1e1fa7",
+    "spec/primary-keys-4.0-M4.html": "69a2fcb976636f4cd4014f8230aae933a58e551fcd72d6a5c0dc21bf1cbec79e",
+    "spec/context-headings-4.0-M4.html": "0e0fe4085d42b7653cb922a384629eed401529804b300645e63f81c11eab5f21"
+  },
+  "prerequisites": [
+    {
+      "section": "2.1",
+      "anchor": "a18",
+      "path": "spec/entity-class-4.0-M4.html",
+      "heading_base": 1,
+      "include_subsections": false,
+      "footnotes": [
+        2,
+        3
+      ]
+    },
+    {
+      "section": "2.2.2",
+      "anchor": "value-type-reference-type",
+      "path": "spec/value-types-4.0-M4.html",
+      "heading_base": 1,
+      "include_subsections": false,
+      "footnotes": []
+    },
+    {
+      "section": "2.4",
+      "anchor": "a132",
+      "path": "spec/primary-keys-4.0-M4.html",
+      "heading_base": 1,
+      "include_subsections": false,
+      "footnotes": [
+        11,
+        12,
+        13,
+        14
+      ]
+    }
+  ],
+  "context_headings": "spec/context-headings-4.0-M4.html"
+}

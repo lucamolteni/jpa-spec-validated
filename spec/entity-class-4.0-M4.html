@@ -1,0 +1,49 @@
+<div class="sect2">
+<h3 id="a18"><a class="anchor" href="#a18"></a>2.1. The Entity Class</h3>
+<div class="paragraph">
+<p>The entity class must be annotated with the <code>Entity</code> annotation or
+declared as an <code>entity</code> in its XML descriptor.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The entity class must be a top-level class or a static inner class.
+An enum, record, or interface may not be designated as an entity.</p>
+</li>
+<li>
+<p>The entity class must have a <code>public</code> or <code>protected</code> constructor with no
+parameters, which is called by the persistence provider runtime to
+instantiate the entity.<sup class="footnote">[<a id="_footnoteref_2" class="footnote" href="#_footnotedef_2" title="View footnote.">2</a>]</sup> This constructor is usually declared in the Java source code,
+but it might be added using source or bytecode processing by the build
+process or runtime environment.<sup class="footnote">[<a id="_footnoteref_3" class="footnote" href="#_footnotedef_3" title="View footnote.">3</a>]</sup> The entity class
+may have additional constructors for use by the application.</p>
+</li>
+<li>
+<p>The entity class must be non-<code>final</code>. Every method and persistent
+instance variable of the entity class must also be non-<code>final</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>An entity might be an abstract class, or it might be a concrete class.
+An entity may extend a non-entity class, or it may extend another entity
+class. A non-entity class may extend an entity class.</p>
+</div>
+<div class="paragraph">
+<p>The persistent state of an entity is represented by instance variables,
+which may correspond to JavaBeans properties. An instance variable may
+be directly accessed only within the methods of the entity, by the
+entity instance itself. An instance variable of an entity must <em>not</em> be
+directly accessed by a client of the entity. The state of the entity is
+available to clients only through the methods of the entity&#8212;&#8203;that is,
+via accessor (getter/setter) methods, or via other business methods.</p>
+</div>
+</div>
+
+<div class="footnote" id="_footnotedef_2">
+<a href="#_footnoteref_2">2</a>. The term "persistence provider runtime" refers to the runtime environment of the persistence implementation. In a JakartaEE environment, this might be the Jakarta EE container itself, or a third-party persistence provider implementation integrated with the container.
+</div>
+
+<div class="footnote" id="_footnotedef_3">
+<a href="#_footnoteref_3">3</a>. When the constructor is added by tooling or by the container, the entity source code is not portable to environments where such tooling is unavailable.
+</div>

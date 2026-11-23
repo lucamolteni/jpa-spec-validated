@@ -1,0 +1,84 @@
+{
+  "date": "2026-11-23",
+  "original_revision": "8974e1f2e20b9a7fc2ae72c617fbef1a403c666b",
+  "source_files": {
+    "EntityLifecycle.tla": "c927bb1837bb85d0eac9232a5388bc1a838ce2e5fff7089f0ccddbd1bc43e315",
+    "EntityLifecycle_proof.tla": "fc378925e1d9d0191fc08ac7ea804386b07ab70d2d804c210b42350a907ac7af",
+    "EntityLifecycle.cfg": "702319eb80c78e98a05dcb0b0c4221a305d32af790cd89bd031b3d034e723c0c",
+    "EntityLifecycleScenarios.tla": "775847b3e0731b88f3af9b9635315a0ddf67ad4d11c36fb51f617ce6dc64bfa9",
+    "EntityLifecycleScenarios.cfg": "e08932a78ab33160037264b492c30d50456a2979b5cbe1f78b379af5b54f39e3"
+  },
+  "tools": {
+    "java": "GraalVM Community 25.0.2, aarch64 macOS",
+    "tlc": {
+      "release": "v1.8.0 (rolling prerelease)",
+      "build": "2026.11.19.180144",
+      "revision": "bc1b506",
+      "jar_sha256": "fdffef247f563ef6edbfd44958d2a82db79e7564e07cb673262d896353fa6713"
+    },
+    "tlaps": {
+      "release": "1.6.0-pre (rolling prerelease)",
+      "revision": "961e909",
+      "archive_sha256": "1e8cc2fa6be352528d52611e1b77ad004e6ccd7f1264b119df17599179601e26",
+      "binary_sha256": "dd4870329bb917bd2863071427a9db3b25b56b8178591d0e39c0c7926204064e",
+      "flags": [
+        "--strict",
+        "--nofp"
+      ],
+      "proved_obligations": 93
+    },
+    "lean": "leanprover/lean4:v4.35.0",
+    "veil": "5a525eeca8cee37b2da8c010552db9b1aae968c2",
+    "verso": "304b8561790c50222551c937ce02928df0d5b445"
+  },
+  "comparison": {
+    "lifecycle": {
+      "states": 352,
+      "tlc_generated": 2707,
+      "distinct_edges": 1533
+    },
+    "scenario": {
+      "states": 32,
+      "tlc_generated": 34,
+      "distinct_edges": 33,
+      "operations": 17,
+      "completed_identity_assignments": 2
+    }
+  },
+  "encoding": {
+    "entities": [
+      "e1=0",
+      "e2=1",
+      "e3=2"
+    ],
+    "identities": [
+      "none=0",
+      "id1=1",
+      "id2=2"
+    ],
+    "phases": [
+      "new=0",
+      "managed=1",
+      "detached=2",
+      "removed=3"
+    ],
+    "state_key": "created,phase,identity for each entity, joined by semicolons; scenario prefixes step|",
+    "edge_key": "source>target; duplicate action-labelled edges collapsed, as a relation"
+  },
+  "fixtures": {
+    "scenario-states.txt": "aeb183a6a1f42b53ae6e02d74e6e589a0d03c15d58d29aff20e54e8757f7a075",
+    "lifecycle-edges.txt": "79292de3828af4629c3c2d3279d84bb2f3831da45fad3ed6d5a6ad56648181c5",
+    "scenario-edges.txt": "f7ed7b14c9b5e2c459ae2abf7d51b44234f3986e1192ed89a123722fb6a9b4c5",
+    "lifecycle-states.txt": "896c817196c2a24784e6909f12feaee32418e92b81a14335edfbe564a17de723"
+  },
+  "interpretation_differences": [
+    "The earlier README anchor a1060 points to Chapter 3; the lifecycle section is a1929 in the same 4.0-M4 edition.",
+    "Lean types enforce ELTypeOK. Invariants over all slots are equivalent to the previous created/uncreated partition.",
+    "The identity sort includes the no-identity marker. Fin 3 contains two usable identities plus that marker.",
+    "The intended finite nonempty pools are unchanged. Lean safety proofs generalize to infinite pools because finiteness is unused.",
+    "The scenario exhausts every choice at each of 17 strictly advancing steps and fails on any disabled call. Under the old driver weak fairness this ensures the same completion requirement; no lifecycle fairness is added.",
+    "The Lean detached-step lemma needs only an existing detached source and the allowed transition. The old invariant premise is unnecessary; the original initialized-execution result follows.",
+    "No difference was found in the configured finite reachable states or edge relations. This comparison is finite regression evidence, not a proof of language-translation equivalence.",
+    "Rolling TLC/TLAPS prereleases changed since the November 13 record; exact downloaded versions and checksums above identify this rerun."
+  ]
+}

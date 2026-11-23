@@ -1,108 +1,158 @@
-# Jakarta Persistence entity lifecycle, modeled and proved in TLA+
+# Jakarta Persistence lifecycle, formalized in Lean and Veil
 
-A small mathematical model of the entity lifecycle in one persistence context, based on [Jakarta Persistence 4.0-M4, section 3.6](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a1060). It includes an annotated specification, executable model-checking scenarios, and a proof checked by the TLA+ Proof System (TLAPS).
+A literate, executable model of one persistence context, alongside the complete
+**Jakarta Persistence 4.0-M4, §3.6, Entity Instance Lifecycle**. The chapter retains
+the specification's wording, headings, order, lists, references, and footnotes.
+It begins with the selected prerequisite sections **§2.1**, **§2.2.2**, and
+**§2.4** (only the text before §2.4.1), preserving their original numbers and
+referenced footnotes. Parent headings retain the specification's chapter and
+section hierarchy. These introduce entity classes, object identity, and
+persistent identity; their class and mapping requirements are not formalized.
+Clearly labelled **Formalization addition** passages and checked Lean/Veil code
+explain the mathematical interpretation. Each chapter is a prose-first Verso
+Manual document: ordinary prose follows `#doc (Manual)`, and `lean` code fences
+contain the actual checked implementation. Later blocks and importing chapters
+use those same declarations; there is no separate copy of the code for display.
 
-The model describes `persist`, `remove`, `detach`, `refresh`, and `merge`. It distinguishes a Java entity's identity from its persistent identity, so a detached entity and its managed copy can represent the same database record.
+Start with [the lifecycle chapter](Lifecycle/Model.lean). Its source is
+[Jakarta Persistence 4.0-M4, May 25, 2026 (DRAFT)](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a1929),
+authored by the Jakarta Persistence Team. This is documentation of a mathematical
+model, not a replacement technical specification. Attribution and the complete
+Eclipse Foundation Specification License v1.1 notice are included in the chapter
+and in [the pinned source notice](spec/notice.html).
 
-Here, **entities** means Java entity instances. `Entities` is the set of possible entities, and `createdEntities` records which ones have been created so far. Two distinct entities can share a persistent identity.
+## Build and read
 
-## What this project does
+Install [Elan](https://github.com/leanprover/elan), Git, Python 3, and a C/C++ toolchain
+(Xcode Command Line Tools on macOS; Clang and libc++ development libraries on Linux).
+The first build downloads dependencies and solver libraries and takes longer.
+Lean **4.35.0**, Veil, Verso, and every transitive dependency are pinned by
+[lean-toolchain](lean-toolchain), [lakefile.lean](lakefile.lean), and
+[lake-manifest.json](lake-manifest.json). Keep the manifest; `lake update` is only
+needed when deliberately changing dependency versions.
 
-TLA+ describes a system as a sequence of snapshots and rules for moving between them. Here, each snapshot records which entities exist, their lifecycle states, and their persistent identities. An operation describes an allowed transition between two snapshots.
+From the repository root:
 
-| Entity state | Persistent identity | Associated with this context | Removal pending |
-| --- | --- | --- | --- |
-| New | No | No | No |
-| Managed | Yes | Yes | No |
-| Detached | Yes | No | No |
-| Removed | Yes | Yes | Yes |
+```sh
+lake build                            # Model, proofs, axiom audit, finite Veil check
+lake env lean --run Lifecycle/Checks.lean  # Exact graphs and 17-operation scenario
+python3 scripts/check_spec.py          # Original prose/structure preservation
+lake exe generate-book                # Generate the complete single-page book
+python3 scripts/check_html.py          # Compare rendered structure and wording
+```
 
-For example, merging a detached entity representing `Customer/42` returns a different, managed entity representing `Customer/42`. The original entity remains detached. Merging it again can return the same managed target.
+Run all acceptance checks with `sh scripts/check.sh`. HTML is generated under
+`.lake/build/book/html-single/`; open its `index.html`. The document includes the
+chapter, execution proofs, finite checks, and trust audit. No publication or
+upstream fork is part of this repository change.
 
-There are two ways to verify the model:
+[Lifecycle.lean](Lifecycle.lean) assembles the four Manual documents.
+[Main.lean](Main.lean) uses Verso's `manualMain` to render the compiled book;
+it promotes the model's chapters into the book's table of contents and loads
+the document separately so the finite checker's existing `main` entry
+point remains available. `specBoundary` commands mark original passages for
+preservation checks, and `formalization` directives visibly distinguish project
+commentary. These markers do not duplicate the specification or implementation.
 
-- **TLC model checking:** explore all reachable snapshots for specific, finite sets of entities and identities, looking for a violation of the stated properties.
-- **TLAPS proof checking:** check an inductive argument that the properties hold for any sets satisfying the model's assumptions. First establish the rules initially, then show that every allowed operation preserves them.
+## Live preview
 
-Neither tool runs Java code or connects to a database. Verification applies to the mathematical model; it does not certify a persistence provider or establish full Jakarta Persistence conformance.
+Run the preview once, then leave it running while editing:
 
-## Files and reading order
+```sh
+./preview.sh
+```
 
-| File | Purpose |
+Open <http://127.0.0.1:8000/>. Saving a Lean source file in the project root or
+under `Lifecycle/`, or changing the dependency manifest or toolchain, automatically
+rebuilds the book and refreshes the browser. Build errors appear in the terminal;
+the last successful page remains available until a build succeeds. Press Ctrl+C
+to stop. The launcher also works from another directory, and `python3 preview.py`
+can be used directly.
+
+## Proved guarantees
+
+[Lifecycle/Proofs.lean](Lifecycle/Proofs.lean) establishes three named theorems from
+the **same Veil actions** that are executed by the finite checks:
+
+| Theorem | Guarantee |
 | --- | --- |
-| [EntityLifecycle.tla](EntityLifecycle.tla) | The model, with a notation guide and explanations of the data, rules, and operations. Start here. |
-| [EntityLifecycle_proof.tla](EntityLifecycle_proof.tla) | The inductive proof, with explanations of each claim and the proof notation. |
-| [EntityLifecycle.cfg](EntityLifecycle.cfg) | TLC settings for three possible entities and two persistent identities. |
-| [EntityLifecycleScenarios.tla](EntityLifecycleScenarios.tla) | A 17-operation sequence exercising lifecycle changes, ignored calls, and merge behavior. |
-| [EntityLifecycleScenarios.cfg](EntityLifecycleScenarios.cfg) | TLC settings for the scenario checks. |
+| `ELCorrect` | Every state of every initialized execution is consistent: new iff no identity, uncreated slots retain their defaults, and context members have unique persistent identities. |
+| `ELDetachedCorrect` | Each allowed transition, including stuttering, preserves the detached state of every already-created detached instance. |
+| `ELMergeSourceUnchanged` | A successful merge leaves its source's lifecycle state and persistent identity unchanged; a new or detached source differs from its returned target. |
 
-## Properties established
+`ELSpec` assumes initialization and allowed steps, **not** the invariant. Its
+consistency proof uses induction over execution time and the checked initialization
+and action preservation lemmas. Lean's types enforce the former typing invariant.
+A Java instance and its persistent identity are separate: a detached source and
+its managed copy may represent the same database record.
 
-The proof establishes three main claims:
+`veil.smt.trust` is disabled in the build and formalization. Veil's `grind` backend
+and explicit Lean proofs produce kernel-checked proof terms while Verso elaborates
+the code fences. There are no unfinished proofs.
+[The audit](Lifecycle/Audit.lean) checks every model theorem and rejects axioms
+other than Lean's standard `propext`, `Classical.choice`, and `Quot.sound`, including
+trusted solver results and compiler-based proof shortcuts. All three main theorems
+use only those three standard axioms. Executable model checks are separate
+regression evidence, not substitutes for kernel-checked proofs.
 
-1. **Consistency always holds (`ELCorrect`).** Entities have permitted states and identities. A created entity has no persistent identity exactly when it is new. Two different entities associated with the context cannot have the same persistent identity; this includes entities marked for removal.
-2. **Detached entities stay detached (`ELDetachedCorrect`).** Within the modeled operations, a detached source never becomes managed itself, including when passed to merge.
-3. **Merge preserves its source (`ELMergeSourceUnchanged`).** Merge leaves the source's lifecycle state and persistent identity unchanged. For a new or detached source, the returned target is a different entity.
+## Scenarios and migration evidence
 
-The scenario checks exercise persist–remove–persist, detachment, cancellation of pending removal, merge of a new source, merge of a detached source into both a fresh and an existing managed target, and specified no-op cases. The test driver requires the sequence to finish, so an accidentally disabled operation cannot make the checks pass without being exercised.
+[The finite checks](Lifecycle/Checks.lean) execute Veil's generated enumerable
+transition system with three entities and two persistent identities (plus the
+no-identity marker). They compare every reachable state and every distinct edge
+with the original TLC graph, and check consistency, detached preservation,
+merge-source preservation, and excluded calls.
 
-## Run the checks
+The scenario reproduces all 17 operations, including ignored calls, cancellation
+of removal, and merge into fresh and existing targets. Every prefix must enable
+its next prescribed call for **every** identity choice. Both identity assignments
+must finish; a disabled operation fails the check. All original assertions are
+retained. This finite driver checks progress by exhausting a strictly advancing
+17-step sequence; under the original driver's weak fairness this is the same
+completion requirement. It adds no fairness to the lifecycle model.
 
-Run the following commands from the repository root. You need Java for TLC, and a separate TLAPS installation for the proof.
-
-### Model checking with TLC
-
-Download the official [TLA+ tools](https://github.com/tlaplus/tlaplus/releases/tag/v1.8.0) into the ignored `.tools` directory:
-
-```sh
-mkdir -p .tools
-curl -fL https://github.com/tlaplus/tlaplus/releases/download/v1.8.0/tla2tools.jar \
-  -o .tools/tla2tools.jar
-```
-
-Check the lifecycle model and then the scenario:
-
-```sh
-java -XX:+UseParallelGC -Xmx512m -cp .tools/tla2tools.jar tlc2.TLC EntityLifecycle
-java -XX:+UseParallelGC -Xmx512m -cp .tools/tla2tools.jar tlc2.TLC EntityLifecycleScenarios
-```
-
-Both commands should report `Model checking completed. No error has been found.` TLC stores generated data under `states/`, which is ignored by Git. Change the constant sets in the configuration files to explore other model sizes; the scenario configuration assumes exactly three possible entities and two identities.
-
-### Proof checking with TLAPS
-
-Install TLAPS using the [official installation instructions](https://github.com/tlaplus/tlapm#installation--use) and put its `bin` directory on your `PATH`. The verified build came from the [1.6.0-pre release](https://github.com/tlaplus/tlapm/releases/tag/1.6.0-pre).
-
-```sh
-tlapm --strict --nofp EntityLifecycle_proof.tla
-```
-
-`--strict` treats failed or incomplete proofs as errors. `--nofp` disables reuse of cached proof results. TLAPS should report `All 93 obligations proved.` An obligation is a logical subproblem generated from the proof, not a test case or an execution sequence. Generated proof data under `.tlacache/` is ignored by Git.
-
-### Verification record
-
-Checked on November 13, 2026:
+Validation during migration on November 23, 2026:
 
 | Check | Result |
 | --- | --- |
-| Lifecycle model | 352 distinct reachable states; 2,707 generated; no errors |
-| Scenario | 32 distinct states; all 17 operations reached; no errors |
-| Proof | All 93 obligations proved, with proof-cache reuse disabled |
+| Original TLC lifecycle | 352 states; 2,707 generated; no errors |
+| Original TLC scenario | 32 states; all 17 operations reached; no errors |
+| Original TLAPS, `--strict --nofp` | All 93 obligations proved |
+| Veil lifecycle graph | All 352 states and 1,533 distinct edges match TLC |
+| Veil scenario graph | All 32 states and 33 distinct edges match TLC |
 
-Tools used: Java 25.0.2; TLC build `2026.11.06.222357` (`d8fb231`, v1.8.0 prerelease); TLAPS `ff40755` (1.6.0-pre), with bundled Z3 4.8.9, Zenon, and LS4 backends. Prerelease downloads may change; these identifiers record the builds used for the results above.
+[verification/migration.json](verification/migration.json) records provenance,
+checksums, and interpretation differences. The original check logs and canonical
+finite graphs are retained under `verification/`. The TLA+ model, proof,
+configurations, and scenario are available in Git at commit `8974e1f`; they are no
+longer part of the working formalization. To reproduce the migration baselines,
+use [scripts/migration.py](scripts/migration.py) with the recorded TLC and TLAPS
+binaries; it restores the historical files into a temporary directory.
 
-## Model boundaries
+The pinned specification fragments in `spec/` are checked by checksum and by a
+deterministic markup conversion. A separate HTML check compares the rendered
+chapter directly with those original fragments, including paragraph order,
+heading levels, nested lists, emphasis, code, reference targets, and notices.
 
-The model covers successful lifecycle effects in one persistence context. It leaves out entity field values, database contents, transactions, exception timing, cascading, versions, concurrent access, and context closure. Refresh therefore leaves the modeled snapshot unchanged; flush and lock have no modeled actions. Removed entities are marked as pending removal, without modeling the eventual database deletion.
+## Scope and limitations
 
-The model permits a finite number of entities and persistent identities. Creating an entity or a managed copy is possible only until the entity limit is reached; assigning a new persistent identity needs an unused identity. Reaching either limit disables the corresponding action and does not represent a JPA exception. Identity assignment is atomic and identities are never reused.
+The model covers successful effects of construction, `persist`, `remove`,
+`detach`, `refresh`, and `merge` in one context. Removed instances retain their
+identity and context membership until detached; eventual database deletion is
+unmodeled. `context` includes removed instances and is not `EntityManager.contains()`.
 
-Merging a detached source whose identity is represented by a removed entity in the context is excluded from the successful-operation subset. The model also does not track the portability restriction on reusing a removed entity after detachment.
+Fields, database contents, transactions, exception timing, cascades, orphan
+removal, versions, concurrency, context closure/clear, retrieval, serialization,
+and lazy/load state are unformalized. Their specification passages remain in the
+document unchanged. Refresh therefore stutters; flush and lock have no actions.
+The model neither executes Java nor certifies a provider's conformance.
 
-The claims concern safety: which states and transitions are permitted. The lifecycle specification allows executions to pause indefinitely and does not require an eventual flush or commit. Only the scenario driver adds a progress requirement to ensure its prescribed operations are exercised.
+Pools are fixed, nonempty, and finite in the intended model. Exhaustion disables
+allocation and is not a JPA exception. Identity assignment is atomic and identities
+are never reused. The Lean proofs do not need finiteness and also hold for infinite
+pools; finite regression checks preserve the original bounds.
 
-## References
-
-- [Jakarta Persistence 4.0-M4: Entity Instance Lifecycle](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a1060) supplies the lifecycle rules and referenced operation semantics.
-- [TwoPhase.tla](https://github.com/tlaplus/Examples/blob/master/specifications/transaction_commit/TwoPhase.tla) inspired the specification's organization.
-- [TCommit_proof.tla](https://github.com/tlaplus/Examples/blob/master/specifications/transaction_commit/TCommit_proof.tla) inspired the inductive proof structure.
+Merging a detached source whose identity is represented by a removed context
+member is excluded from the successful-operation subset. The portability
+restriction on reuse after detaching a removed entity is not enforced. Executions
+may stutter indefinitely: no eventual flush, commit, or lifecycle call is promised.

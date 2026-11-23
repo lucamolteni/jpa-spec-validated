@@ -1,5 +1,13 @@
+# Lean dependencies, builds, and generated documentation
+/.lake/
+
+# Local verification output and downloaded tools
+/_out/
+/.tools/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# macOS metadata
 .DS_Store
-.tools/
-.tlacache/
-states/
-*.toolbox/

@@ -1,0 +1,965 @@
+<div class="sect2">
+<h3 id="a1929"><a class="anchor" href="#a1929"></a>3.6. Entity Instance Lifecycle</h3>
+<div class="paragraph">
+<p>Any entity instance can be characterized as being in one of the following
+<em>lifecycle states</em> with respect to a given persistence context:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A <strong>new</strong> entity instance has no persistent identity and is not yet
+associated with any persistence context.</p>
+</li>
+<li>
+<p>A <strong>managed</strong> entity instance is an instance with a persistent identity
+that is currently associated with a persistence context.</p>
+</li>
+<li>
+<p>A <strong>detached</strong> entity instance is an instance with a persistent identity
+that is not (or no longer) associated with a persistence context.</p>
+</li>
+<li>
+<p>A <strong>removed</strong> entity instance is an instance with a persistent identity,
+and associated with a persistence context, that is scheduled for removal
+from the database upon transaction commit.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Certain operations of <code>EntityManager</code> modify the lifecycle state of an
+entity instance. The following subsections describe the effect of such
+lifecycle operations.</p>
+</div>
+<div class="sect3">
+<h4 id="lifecycle-operations"><a class="anchor" href="#lifecycle-operations"></a>3.6.1. Lifecycle Operations</h4>
+<div class="paragraph">
+<p>The fundamental operations of an <code>EntityManager</code> are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>persist()</code> to make a new entity persistent, as defined in <a href="#persist">Section 3.6.3</a>,</p>
+</li>
+<li>
+<p><code>remove()</code>, to remove a persistent entity from the database, as defined
+in <a href="#remove">Section 3.6.4</a>,</p>
+</li>
+<li>
+<p><code>flush()</code>, to force synchronization of pending modifications with the
+database, as defined in <a href="#flush">Section 3.6.6</a>,</p>
+</li>
+<li>
+<p><code>refresh()</code>, to reload an entity from the database, as defined in
+<a href="#refresh">Section 3.6.7</a>,</p>
+</li>
+<li>
+<p><code>detach()</code>, to disassociate an entity from its persistence context,
+as defined in <a href="#detach">Section 3.6.8</a>,</p>
+</li>
+<li>
+<p><code>merge()</code>, to copy the state of a detached instance into the persistence
+context, and</p>
+</li>
+<li>
+<p><code>lock()</code> to obtain a lock an entity instance or to upgrade the lock
+level currently held, as defined in <a href="#a2052">Section 3.9</a>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The methods <code>persist()</code>, <code>remove()</code>, <code>refresh()</code>, <code>detach()</code>, and <code>merge()</code>
+are called <em>lifecycle operations</em>.</p>
+</div>
+<div class="paragraph">
+<p>The <code>cascade</code> annotation element of a relationship modeling annotation,
+as defined in <a href="#a516">Section 2.11</a>, specifies which lifecycle operations propagate
+to associated entities. Each lifecycle operation is identified by the
+corresponding member of the enumeration <code>CascadeType</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="type">enum</span> CascadeType {ALL, PERSIST, MERGE, REMOVE, REFRESH, DETACH}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The value <code>cascade=ALL</code> is equivalent to
+<code>cascade={PERSIST, MERGE, REMOVE, REFRESH, DETACH}</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The cascade functionality is most typically used to model parent-child
+relationships. A closely related feature is orphan removal, which is
+defined below in <a href="#orphan-removal">Section 3.6.5</a>.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Information about how lifecycle operations interact with transactions
+may be found below in <a href="#entity-manager-transactions">Section 3.7.2</a>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="entity-instance-creation"><a class="anchor" href="#entity-instance-creation"></a>3.6.2. Entity Instance Creation</h4>
+<div class="paragraph">
+<p>An instance of an entity class may be created using the <code>new</code> operator.
+A newly instantiated instance is not considered persistent&#8212;&#8203;that is,
+it is not considered to represent a record in the database&#8212;&#8203;and the new
+instance is not associated with a persistence context. A new instance is
+not considered to have a well-defined persistent identity until it is
+made persistent.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="persist"><a class="anchor" href="#persist"></a>3.6.3. Persisting an Entity Instance</h4>
+<div class="paragraph">
+<p>A new instance becomes persistent when it is passed as an argument to
+the <code>persist()</code> method of <code>EntityManager</code> or when the persist operation
+cascades from another instance to the new instance.</p>
+</div>
+<div class="paragraph">
+<p>Let <code>e</code> be an instance of an entity class. If <code>e</code> is passed as an argument
+to the <code>persist()</code> method of <code>EntityManager</code>, or if the persist operation
+is applied to <code>e</code> via cascade:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>if <code>e</code> is a new entity, it becomes managed and a new record represented
+by <code>e</code> will be inserted into the database at or before transaction commit
+as a result of the flush operation specified below in <a href="#flush">Section 3.6.6</a>;</p>
+</li>
+<li>
+<p>if <code>e</code> is a managed entity already associated with the persistence
+context, <code>e</code> itself is ignored by the persist operation;</p>
+</li>
+<li>
+<p>if <code>e</code> is a removed entity, it becomes managed; or</p>
+</li>
+<li>
+<p>if <code>e</code> is a detached entity, either an <code>EntityExistsException</code> is thrown
+immediately, or an <code>EntityExistsException</code> or some other subtype of
+<code>PersistenceException</code> is thrown when the persistence context is flushed
+or when the transaction commits.</p>
+</li>
+<li>
+<p>If <code>e</code> is new, managed, or removed, the persist operation is also applied
+to every entity <code>t</code> referenced by a relationship owned by <code>e</code> and annotated
+with the <code>cascade</code> element value <code>cascade=PERSIST</code> or <code>cascade=ALL</code> or
+mapped as such by the equivalent XML descriptor element.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Ordinarily, the persist operation assigns a persistent identity to the
+entity. If the primary key of the entity is a generated value, as defined
+by <a href="#a14790">Section 11.2.23</a>, the primary key is generated as part of the persist operation,
+and the generated value is made available to the application by setting the
+primary key field or property of the entity. As a special exception to this
+rule, if the primary key generation strategy of an entity is <code>IDENTITY</code>,
+the persistence provider is permitted to delay assignment of the primary key
+until pending modifications are synchronized with the database, as defined
+by <a href="#flush">Section 3.6.6</a>. Indeed, when <code>persist()</code> is called with no active transaction,
+the persistence provider is <em>required</em> to delay generation and assignment of
+<code>IDENTITY</code> primary keys.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="remove"><a class="anchor" href="#remove"></a>3.6.4. Removal</h4>
+<div class="paragraph">
+<p>A managed entity instance becomes removed when it is passed as an argument
+to the <code>remove()</code> method of <code>EntityManager</code> or when the remove operation
+cascades from another instance to the managed instance.</p>
+</div>
+<div class="paragraph">
+<p>Let <code>e</code> be an instance of an entity class. If <code>e</code> is passed as an argument
+to the <code>remove()</code> method of <code>EntityManager</code>, or if the remove operation is
+applied to <code>e</code> via cascade:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>if <code>e</code> is a new entity, <code>e</code> itself is ignored by the remove operation;</p>
+</li>
+<li>
+<p>if <code>e</code> is a managed entity, it is marked as removed and the record
+represented by <code>e</code> is scheduled for deletion from the database at or
+before transaction commit as a result of the flush operation specified
+below in <a href="#flush">Section 3.6.6</a>;</p>
+</li>
+<li>
+<p>if <code>e</code> is a removed entity, <code>e</code> itself is ignored by the remove
+operation; or</p>
+</li>
+<li>
+<p>if <code>e</code> is a detached entity, an <code>IllegalArgumentException</code> is thrown
+or a failure occurs later when the flush operation occurs.</p>
+</li>
+<li>
+<p>If <code>e</code> is new, managed, or removed, the remove operation is also applied
+to every entity <code>t</code> referenced by a relationship owned by <code>e</code> and annotated
+with the <code>cascade</code> element value <code>cascade=REMOVE</code> or <code>cascade=ALL</code> or
+mapped as such by the equivalent XML descriptor element.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The <code>remove()</code> method does not change the state held by fields of the
+entity instance itself.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="orphan-removal"><a class="anchor" href="#orphan-removal"></a>3.6.5. Orphan Removal</h4>
+<div class="paragraph">
+<p>The <code>orphanRemoval</code> member of the <code>@OneToOne</code> and <code>@OneToMany</code> relationship
+modelling annotations controls the enablement of <em>orphan removal</em>. When a
+relationship is mapped <code>orphanRemoval=true</code>, the remove operation is
+automatically applied to a child entity when the association between the
+child entity and its parent is destroyed.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If a managed entity instance is removed from the relationship by setting
+the relationship attribute to <code>null</code> or by removing the entity from the
+relationship collection, the remove operation is applied to the orphaned
+entity. The remove operation occurs when the persistence context is flushed,
+as defined below in <a href="#flush">Section 3.6.6</a>. If an entity being orphaned is a detached,
+new, or removed entity, it is ignored by orphan removal.</p>
+</li>
+<li>
+<p>If the remove operation is applied to a managed entity, the remove operation
+is cascaded to the relationship target in accordance with the rules of <a href="#remove">Section 3.6.4</a>,
+and it is not therefore necessary to explicitly specify <code>cascade=REMOVE</code> for
+a relationship declared with <code>orphanRemoval=true</code>.<sup class="footnote">[<a id="_footnoteref_30" class="footnote" href="#_footnotedef_30" title="View footnote.">30</a>]</sup></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Portable applications must not depend on a specific timing of the removal
+operation and must not reassign an entity that has been orphaned to another
+relationship, nor otherwise attempt to make it persistent, reversing the
+effect of orphan removal.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="flush"><a class="anchor" href="#flush"></a>3.6.6. Synchronization to the Database</h4>
+<div class="paragraph">
+<p>Usually, a persistence context is synchronized to the database as
+described below. However, as an exception, a persistence context of
+type <code>SynchronizationType.UNSYNCHRONIZED</code>, or an application-managed
+persistence context that has been created outside the scope of the
+current transaction, is only synchronized to the database if it has
+been explicitly joined to the current transaction by calling the
+<code>joinTransaction()</code> method of <code>EntityManager</code>, as specified below
+in <a href="#synchronization-type">Section 3.7.3</a>.</p>
+</div>
+<div class="paragraph">
+<p>Assuming that the persistence context is joined to the current
+transaction, and that its flush mode was not explicitly set to
+<code>EXPLICIT</code>, the state of its managed entities is synchronized to
+the database at transaction commit. This synchronization involves
+writing to the database any pending modifications to the state of
+persistent entities and their relationships.</p>
+</div>
+<div class="paragraph">
+<p>A modification to the state of an entity might include an assignment
+of a new value to a persistent property or field of the entity, or
+even modification of a mutable value of a persistent property or
+field<sup class="footnote">[<a id="_footnoteref_31" class="footnote" href="#_footnotedef_31" title="View footnote.">31</a>]</sup>.</p>
+</div>
+<div class="paragraph">
+<p>Synchronization to the database does not involve refreshing the state
+of managed entities with changes made to the database<sup class="footnote">[<a id="_footnoteref_32" class="footnote" href="#_footnotedef_32" title="View footnote.">32</a>]</sup>.</p>
+</div>
+<div class="paragraph">
+<p>Bidirectional relationships between
+managed entities are persisted based on references held by the
+owning side of the relationship. It is the developer&#8217;s responsibility to
+keep the in-memory references held on the owning side and those held on
+the inverse side consistent with each other when they change. In the
+case of unidirectional one-to-one and one-to-many relationships, it is
+the developer&#8217;s responsibility to ensure that the semantics of the
+relationships are adhered to.<sup class="footnote">[<a id="_footnoteref_33" class="footnote" href="#_footnotedef_33" title="View footnote.">33</a>]</sup></p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>It is particularly important to ensure that changes made to the inverse
+side of a relationship are reflected by corresponding changes on the
+owning side. The provider is not required to synchronize changes made
+only at the inverse end of an association. Failure to modify the owning
+side of a relationship typically results in the change being lost.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>When a transaction is active and the persistence context is joined to
+the transaction, the persistence provider runtime is permitted to flush
+pending modifications to the database. The application can influence the
+timing of synchronization via the <code>flush()</code> method of <code>EntityManager</code>,
+by setting the <code>FlushModeType</code>, or by specifying a <code>QueryFlushMode</code>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>When the <code>flush()</code> method is called, the provider must synchronize
+every pending modification made to every entity currently associated
+with the persistence context.</p>
+</li>
+<li>
+<p>The <code>setFlushMode()</code> methods of the <code>EntityManager</code>, <code>Statement</code>,
+<code>Query</code>, <code>TypedQuery</code>, and <code>StoredProcedureQuery</code> interfaces can be
+used to control synchronization initiated automatically by the
+provider.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The effect of <code>FlushModeType.AUTO</code> is defined in <a href="#a4374">Section 3.15.3</a>.</p>
+</li>
+<li>
+<p>If <code>FlushModeType.COMMIT</code> is specified, synchronization occurs at
+transaction commit; the persistence provider is permitted, but not
+required, to flush at other times.</p>
+</li>
+<li>
+<p>If <code>FlushMode.EXPLICIT</code> is specified, the persistence provider
+must never automatically flush modifications to the database.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>The effect of the <code>FlushModeType</code> of the entity manager may be
+overridden during execution of a given query by explicitly specifying
+a <code>QueryFlushMode</code> via the <code>setQueryFlushMode()</code> method of <code>Statement</code>,
+<code>Query</code>, <code>TypedQuery</code>, or <code>StoredProcedureQuery</code>, as specified below
+in <a href="#a4374">Section 3.15.3</a>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If there is no transaction active or if the persistence context has not
+been joined to the current transaction, the persistence provider must not
+flush modifications to the database.</p>
+</div>
+<div class="paragraph">
+<p>Let <code>e</code> be an instance of an entity class associated with a persistence
+context when synchronization occurs:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If <code>e</code> is a managed entity:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Any pending modifications to the values held by its persistent
+attributes are synchronized to the database by updating the record
+represented by <code>e</code>.</p>
+</li>
+<li>
+<p>The persist operation is applied to every entity <code>t</code> referenced by
+a relationship owned by <code>e</code> and annotated with the <code>cascade</code> element
+value <code>cascade=PERSIST</code> or <code>cascade=ALL</code> or mapped as such by the
+equivalent XML descriptor element.</p>
+</li>
+<li>
+<p>Every entity <code>t</code> referenced by a relationship owned by <code>e</code> which
+is <em>not</em> annotated with the <code>cascade</code> element value <code>cascade=PERSIST</code>
+or <code>cascade=ALL</code> or mapped as such by the equivalent XML descriptor
+element is checked:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>if <code>t</code> is new or removed, an <code>IllegalStateException</code> is thrown
+and the transaction is marked for rollback, or the transaction
+commit fails; or</p>
+</li>
+<li>
+<p>if <code>t</code> is detached, the semantics depend upon the ownership of the
+relationship: if <code>e</code> owns the relationship, any changes to the
+relationship are synchronized with the database; otherwise, if <code>t</code>
+owns the relationship, the behavior is undefined.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>If <code>e</code> is a removed entity, the record represented by <code>e</code> is removed from
+the database; no <code>cascade</code> options are relevant.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="refresh"><a class="anchor" href="#refresh"></a>3.6.7. Refreshing an Entity Instance</h4>
+<div class="paragraph">
+<p>The state of a managed entity instance is refreshed from the database when
+it is passed as an argument to the <code>refresh()</code> method of <code>EntityManager</code>
+or when the refresh operation cascades from another instance to the managed
+instance.</p>
+</div>
+<div class="paragraph">
+<p>Let <code>e</code> be an instance of an entity class. If <code>e</code> is passed as the first
+argument to the <code>refresh()</code> method of <code>EntityManager</code>, or if the refresh
+operation is applied to <code>e</code> via cascade:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>if <code>e</code> is a managed entity, the state of <code>e</code> is refreshed from the
+database by reading the record represented by <code>e</code> and modifying the state
+of <code>e</code> to match, overwriting any pending modifications made to the entity;
+or</p>
+</li>
+<li>
+<p>if <code>e</code> is a new, detached, or removed entity, the <code>IllegalArgumentException</code>
+is thrown.</p>
+</li>
+<li>
+<p>If <code>e</code> is managed, the refresh operation is also applied to every entity
+<code>t</code> referenced by a relationship owned by <code>e</code> and annotated with the
+<code>cascade</code> element value <code>cascade=REFRESH</code> or <code>cascade=ALL</code> or mapped as
+such by the equivalent XML descriptor element.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="detach"><a class="anchor" href="#detach"></a>3.6.8. Evicting an Entity Instance from the Persistence Context</h4>
+<div class="paragraph">
+<p>A managed entity instance is removed from the persistence context when it
+is passed as an argument to the <code>detach()</code> method of <code>EntityManager</code> or
+when the detach operation cascades from another instance to the managed
+instance.</p>
+</div>
+<div class="paragraph">
+<p>Let <code>e</code> be an instance of an entity class. If <code>e</code> is passed as an argument
+to the <code>detach()</code> method of <code>EntityManager</code>, or if the detach operation is
+applied to <code>e</code> via cascade:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>if <code>e</code> is a managed entity, it is removed from the persistence context
+and becomes detached;</p>
+</li>
+<li>
+<p>if <code>e</code> is a new or detached entity, it is ignored by the detach operation;</p>
+</li>
+<li>
+<p>if <code>e</code> is a removed entity, it becomes detached, and the scheduled removal
+of the record represented by <code>e</code> is cancelled.</p>
+</li>
+<li>
+<p>If <code>e</code> is managed or removed, the detach operation is also applied to
+every entity <code>t</code> referenced by a relationship owned by <code>e</code> and annotated
+with the <code>cascade</code> element value <code>cascade=DETACH</code> or <code>cascade=ALL</code> or
+mapped as such by the equivalent XML descriptor element.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Portable applications should not pass removed entities that have been
+detached from the persistence context to methods of <code>EntityManager</code>.</p>
+</div>
+<div class="paragraph">
+<p>Entities which referenced <code>e</code> before detachment continue to reference <code>e</code>
+after detachment.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Pending modifications to the state of the entity, including removal of
+the entity, are never synchronized to the database after the entity is
+evicted from the persistence context. If such pending modifications
+exist, an application must call the <code>flush()</code> method before calling
+<code>detach()</code> if portable behavior is required. A portable application
+must not assume that pending modifications have not been written to the
+database if the <code>flush()</code> method was not called before <code>detach()</code>. More
+information about synchronization may be found above in <a href="#flush">Section 3.6.6</a>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="a1982"><a class="anchor" href="#a1982"></a>3.6.9. Detached Entities</h4>
+<div class="paragraph">
+<p>A managed entity instance associated with a persistence context becomes
+detached whenever:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the persistence context is a container-managed transaction-scoped
+persistence context, as defined in <a href="#persistence-context-types">Section 3.7.1</a>,
+and the transaction associated with the persistence context commits,
+as specified in <a href="#a2048">Section 3.7.4</a>,</p>
+</li>
+<li>
+<p>the persistence context is a container-managed persistence context,
+and the transaction associated with the persistence context rolls
+back, as specified in <a href="#a2049">Section 3.7.5</a>,</p>
+</li>
+<li>
+<p>the entity is passed to the <code>detach()</code> method of the <code>EntityManager</code>
+associated with the persistence context,</p>
+</li>
+<li>
+<p>the <code>clear()</code> method is called on the <code>EntityManager</code> associated
+with the persistence context, or</p>
+</li>
+<li>
+<p>the <code>EntityManager</code> associated with the persistence context is
+closed.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A detached entity instance continues to live outside the persistence
+context in which it was persisted or retrieved. Its state does not
+remain synchronized with the database record it represents.</p>
+</div>
+<div class="paragraph">
+<p>When an entity instance is passed to an operation like <code>persist()</code>
+or <code>merge()</code>, the persistence provider is permitted to use the value
+of the identifier and version fields or properties of an entity
+instance to determine whether the instance is new or detached.</p>
+</div>
+<div class="sect4">
+<h5 id="detached-lazy-state"><a class="anchor" href="#detached-lazy-state"></a>3.6.9.1. Detached Entities and Lazy Loading</h5>
+<div class="paragraph">
+<p>The <em>available</em> state of a detached entity instance is the state which
+was already loaded when the instance became detached. The application
+may access the available state of available detached entity instances
+after the persistence context ends.</p>
+</div>
+<div class="paragraph">
+<p>The available state of a detached entity or of an embeddable object
+belonging to a detached entity includes every persistent field or
+property:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>not explicitly mapped as <code>fetch=LAZY</code>,</p>
+</li>
+<li>
+<p>accessed by the application while the entity was managed, or</p>
+</li>
+<li>
+<p>fetched by means of an entity graph, as specified below in <a href="#a2397">Section 3.12</a>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the persistent field or property is an association, the available
+state of an associated instance may be safely accessed if and only if
+the associated instance is available. The available instances include
+every entity instance:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>retrieved using <code>find()</code>, <code>get()</code>, <code>findMultiple()</code>,
+or <code>getMultiple()</code>, as specified in <a href="#retrieval">Section 3.6.11</a>,</p>
+</li>
+<li>
+<p>returned by a query or explicitly requested in a fetch join or
+entity graph,</p>
+</li>
+<li>
+<p>with a persistent attribute other than the primary key which was
+accessed by the application while the entity was managed, or</p>
+</li>
+<li>
+<p>reachable from an available instance by navigating associations
+mapped explicitly or by default as <code>fetch=EAGER</code>.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+A persistence provider might allow access to the primary key of an
+unavailable associated entity.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>A <code>PersistenceException</code> is thrown if the application accesses an
+unavailable attribute, collection, or entity.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="merge"><a class="anchor" href="#merge"></a>3.6.9.2. Merging Detached Entity State</h5>
+<div class="paragraph">
+<p>The merge operation allows for the propagation of state from detached
+entities to managed instances associated with a persistence context.
+Given a detached instance, the merge operation returns a managed
+instance with the same persistent identity and state as the detached
+instance, but with a distinct Java object identity.</p>
+</div>
+<div class="paragraph">
+<p>Let <code>e</code> be an instance of an entity class. If <code>e</code> is passed as an
+argument to the <code>merge()</code> method of <code>EntityManager</code>, or if the merge
+operation is applied to <code>e</code> via cascade, a merged object <code>e2</code> is
+produced:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>if <code>e</code> is a detached entity, the persistent state of <code>e</code> is copied
+to a pre-existing managed entity instance <code>e2</code> of the same identity
+or, if there is no such pre-existing managed entity, a new managed
+copy <code>e2</code> of <code>e</code> is created;</p>
+</li>
+<li>
+<p>if <code>e</code> is a new entity instance, a new managed entity instance <code>e2</code>
+is created and the state of <code>e</code> is <code>copied</code> to <code>e2</code>;</p>
+</li>
+<li>
+<p>if <code>e</code> is a removed entity instance, an <code>IllegalArgumentException</code> is
+thrown or a failure occurs later when the flush operation occurs; or</p>
+</li>
+<li>
+<p>if <code>e</code> is a managed entity, <code>e</code> itself is ignored by the merge
+operation and the merged object <code>e2</code> is taken to be identical to <code>e</code>.</p>
+</li>
+<li>
+<p>If <code>e</code> is new, managed, or detached, the merge operation is also
+applied to every entity <code>t</code> referenced by a relationship owned by <code>e</code>
+and annotated with the <code>cascade</code> element value <code>cascade=MERGE</code> or
+<code>cascade=ALL</code> or mapped as such by the equivalent XML descriptor element.
+For every such <code>t</code> referenced by <code>e</code>, <code>e2</code> is set to reference the object
+<code>t2</code> produced by applying the merge operation to <code>t</code>.</p>
+</li>
+<li>
+<p>For every entity <code>t</code> referenced by <code>e</code> via an association, navigation
+of the same association from <code>e2</code> yields a reference to a managed object
+<code>s</code> with the same persistent identity as <code>t</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If <code>e</code> has a version, as defined in <a href="#a2060">Section 2.5</a>, the persistence provider
+must validate that <code>e</code> and <code>e2</code> have the same version, either during
+processing of the merge operation, or later when the flush operation
+occurs or when the transaction commits.</p>
+</div>
+<div class="paragraph">
+<p>The persistence provider must ignore unfetched attributes of detached
+instances when merging. A persistence provider is permitted to report
+an exception if an entity instance with unfetched lazy attributes
+instantiated by a different persistence provider runtime is passed to
+<code>merge()</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+When this sort of interoperability across different persistence provider
+runtimes from different vendors is required, the application must not use
+lazy loading.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect4">
+<h5 id="detached-entities-and-serialization"><a class="anchor" href="#detached-entities-and-serialization"></a>3.6.9.3. Detached Entities and Serialization</h5>
+<div class="paragraph">
+<p>A persistence provider is required to support:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>the serialization of detached entity instances with unfetched lazy
+attributes instantiated by the persistence provider runtime,</p>
+</li>
+<li>
+<p>subsequent deserialization in a separate Java Virtual Machine with
+access to the same persistence provider runtime and the same entity
+classes, and</p>
+</li>
+<li>
+<p>merging of the deserialized instances in a new persistence context
+implemented by the same persistence provider runtime in the second
+virtual machine.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="managed-entities"><a class="anchor" href="#managed-entities"></a>3.6.10. Managed Entities</h4>
+<div class="paragraph">
+<p>It is the responsibility of the persistence provider to ensure that at
+most one entity instance belonging to a given persistence context has a
+given persistent identity. The persistent identity of an entity class
+instance is represented as a pair comprising:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>the class of the root entity of the entity class inheritance hierarchy
+to which the entity class belongs, together with</p>
+</li>
+<li>
+<p>the value of the primary key of the entity instance, as defined above
+in <a href="#a132">Section 2.4</a>.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Therefore, if the entity type <code>X</code> is a subclass of the root entity type
+<code>Y</code>, and <code>x</code> is an instance of <code>X</code> with primary key <code>k</code>, the persistent
+identity of <code>x</code> is <em>(<code>Y</code>,<code>k</code>)</em>.</p>
+</div>
+<div class="paragraph">
+<p>It is the responsibility of the application to ensure that an instance of
+an entity class is associated with at most one persistence context. If an
+entity instance is made managed in more than one persistence context, the
+behavior is undefined and unportable.</p>
+</div>
+<div class="paragraph">
+<p>The <code>contains()</code> method of <code>EntityManager</code> determines whether an entity
+instance is managed in the associated persistence context. The <code>contains()</code>
+method returns <code>true</code> if and only if:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the argument is a managed entity instance associated with the given
+persistence context, and</p>
+</li>
+<li>
+<p>the argument entity is not marked as removed.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The effect of cascading persist, merge, remove, or detach is immediately
+visible to the <code>contains()</code> method, whereas the actual insertion, update,
+or deletion of the database record represented by the entity is deferred
+until the flush operation occurs.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="retrieval"><a class="anchor" href="#retrieval"></a>3.6.11. Entity Instance Retrieval</h4>
+<div class="paragraph">
+<p>The interface <code>EntityHandler</code>, found in <a href="#_entityhandler_">Section B.1</a> declares
+operations common to <code>EntityManager</code> and <code>EntityAgent</code>, including:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>find()</code>, <code>get()</code>, <code>findMultiple()</code>, and <code>getMultiple()</code>, which allow
+<em>retrieval</em> of an entity or entities&#8212;&#8203;that is, given a persistent
+identity corresponding to a record which already exists in the database,
+or a list of persistent identities, these operations return an entity
+instance or instances representing the corresponding record or records.</p>
+</li>
+<li>
+<p>the methods <code>createQuery()</code>, <code>createNamedQuery()</code>, <code>createNativeQuery()</code>,
+and <code>createStoredProcedureQuery()</code>, which allow creation and subsequent
+execution of a query which returns entity instances representing records
+which exist in the database.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The status of an entity instance returned by an operation declared by
+<code>EntityHandler</code>, <code>EntityManager</code>, or <code>EntityAgent</code> depends on whether
+the operation is called on an entity manager or on an entity agent.
+Similarly, the status of an entity instance returned by an operation
+declared by <code>Query</code>, <code>TypedQuery</code>, or <code>StoredProcedureQuery</code> depends
+on whether the query object was obtained from an entity manager or
+from an entity agent.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>For an <code>EntityAgent</code>, there is no associated persistence context,
+and so every entity instance returned by any operation of the agent
+itself, or of any query object obtained from the agent, is in the
+detached state. Operations on an entity agent never return the same
+entity instance twice.</p>
+</li>
+<li>
+<p>For an <code>EntityManager</code>, every entity instance returned by any
+operation of the manager itself or of any query object obtained
+from the manager, with the exception noted in <a href="#a5500">Section 4.9.2</a>, is in the
+managed state and belongs to the persistence context associated with
+the entity manager. The instance remains in the managed state until
+the entity manager is closed and its persistence context is destroyed
+unless the instance is explicitly detached via a call to <code>detach()</code>
+or <code>clear()</code>, as specified above in <a href="#a1982">Section 3.6.9</a>. An entity manager is
+required to ensure that if an entity instance representing a given
+record already exists in its associated persistence context, then
+exactly that instance is returned by every operation that returns an
+entity representing the record.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+When a container-managed <code>EntityManager</code> with a transaction-scoped
+persistence context is called with no active transaction, the call
+appears to the client to return detached entity instances, as
+described below in <a href="#entity-manager-transactions">Section 3.7.2</a> and
+<a href="#query-execution-transactions">Section 3.15.2</a>. However, strictly speaking, this
+is no more than a consequence of the extremely short lifetime of
+the persistence context in this scenario. From the point of view
+of the persistence provider, the operations of <code>EntityManager</code>
+return managed instances exactly as described here.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>A retrieval operation like <code>find()</code> or <code>get()</code> accepts an entity class
+and a primary key value. Retrieval is by nature polymorphic, and the
+given entity class might be a subclass in an entity class inheritance
+hierarchy. Therefore, given an entity type <code>X</code> and primary key <code>k</code>,
+any retrieval operation must:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>infer the persistent identity <em>(<code>Y</code>,<code>k</code>)</em>, where <code>Y</code> is the root
+entity class of the entity class inheritance hierarchy to which <code>X</code>
+belongs,</p>
+</li>
+<li>
+<p>determine if there is a database record corresponding to that
+persistent identity, and</p>
+</li>
+<li>
+<p>determine if the database record is represented by an instance of
+an entity class assignable to <code>X</code>.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>If a record exists with persistent identity <em>(<code>Y</code>,<code>k</code>)</em> but it is not
+represented by an entity class assignable to <code>X</code>, a <code>PersistenceException</code>
+must be thrown.</p>
+</div>
+<div class="paragraph">
+<p>Otherwise, if a record exists with persistent identity <em>(<code>Y</code>,<code>k</code>)</em> and
+it is represented by an entity class <code>Z</code> assignable to <code>X</code>, an instance
+of <code>Z</code> with primary key <code>k</code> is returned to the caller.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="a2019"><a class="anchor" href="#a2019"></a>3.6.12. Load State</h4>
+<div class="paragraph">
+<p>An instance of an entity or embeddable class is considered <em>loaded</em> if every
+attribute of the entity or embeddable class mapped (explicitly or by default)
+as <code>FetchType.EAGER</code>, including relationships and element collections, has
+been loaded from the database or assigned by the application. A loaded entity
+or embeddable object might have an unloaded attribute if and only if the
+attribute is mapped as <code>FetchType.LAZY</code>.</p>
+</div>
+<div class="paragraph">
+<p>The available state of an entity instance and its associated instances is
+described above in <a href="#detached-lazy-state">Section 3.6.9.1</a>.</p>
+</div>
+<div class="paragraph">
+<p>An attribute of an entity or embedded class might also be considered <em>loaded</em>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>An embedded attribute, as defined in <a href="#a487">Section 2.7</a> is considered to be loaded
+if the embedded attribute was loaded from the database or assigned by the
+application, and, if the attribute references a non-null instance, the
+embeddable instance is loaded.</p>
+</li>
+<li>
+<p>A collection-valued attribute is considered to be loaded if the collection
+was loaded from the database or the value of the attribute was assigned by
+the application and, if the attribute references a non-null instance of the
+collection type, each element of the collection is considered to be loaded.</p>
+</li>
+<li>
+<p>A single-valued relationship attribute is considered to be loaded if the
+relationship attribute was loaded from the database or assigned by the
+application and, if the attribute references a non-null entity instance,
+the entity instance is considered to be loaded.</p>
+</li>
+<li>
+<p>A basic attribute is considered to be loaded if its state has been loaded
+from the database or assigned by the application.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The <code>isLoaded()</code> methods of the <code>PersistenceUtil</code> interface found in
+<a href="#_persistenceutil_">Section B.24</a> determine the load state of a given entity or attribute
+of a given entity, regardless of the persistence unit with which the entity is
+associated, returning <code>true</code> if given entity or attribute is considered loaded
+according to the rules given above, or <code>false</code> otherwise.</p>
+</div>
+<div class="paragraph">
+<p>If the persistence unit to which the entity belongs is known, the <code>isLoaded()</code>
+methods of the interface <code>PersistenceUnitUtil</code> found in <a href="#_persistenceutil_">Section B.24</a>
+and described in <a href="#a12177">Section 7.11</a> may be used instead.</p>
+</div>
+<div class="paragraph">
+<p>Persistence provider contracts for determining the load state of an entity or
+entity attribute are defined in <a href="#a13592">Section 9.9.1</a>.</p>
+</div>
+</div>
+</div>
+
+<div class="footnote" id="_footnotedef_30">
+<a href="#_footnoteref_30">30</a>. If the parent is detached or new, or was previously removed before the orphan was associated with it, the remove operation is not applied to the entity being orphaned.
+</div>
+
+<div class="footnote" id="_footnotedef_31">
+<a href="#_footnoteref_31">31</a>. This includes, for example, modifications to elements of a <code>char[]</code> or <code>byte[]</code> array.
+</div>
+
+<div class="footnote" id="_footnotedef_32">
+<a href="#_footnoteref_32">32</a>. The <code>refresh()</code> method may be used to refresh entity state from the database, as described in <a href="#refresh">Section 3.6.7</a>.
+</div>
+
+<div class="footnote" id="_footnotedef_33">
+<a href="#_footnoteref_33">33</a>. This might be an issue if unique constraints (such as those described for the default mappings in <a href="#a640">Section 2.12.3.1</a> and <a href="#a764">Section 2.12.5.1</a>) were not applied in the definition of the object/relational mapping.
+</div>
