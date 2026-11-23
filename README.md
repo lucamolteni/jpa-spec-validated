@@ -139,7 +139,8 @@ heading levels, nested lists, emphasis, code, reference targets, and notices.
 The model covers successful effects of construction, `persist`, `remove`,
 `detach`, `refresh`, and `merge` in one context. Removed instances retain their
 identity and context membership until detached; eventual database deletion is
-unmodeled. `context` includes removed instances and is not `EntityManager.contains()`.
+unmodeled. `belongsToContext` includes removed instances and is not
+`EntityManager.contains()`.
 
 Fields, database contents, transactions, exception timing, cascades, orphan
 removal, versions, concurrency, context closure/clear, retrieval, serialization,

@@ -146,13 +146,35 @@ In particular:
 :::formalization
 *Formalization addition.* Object identity tells us whether two references
 refer to the same Java object. Persistent identity tells us whether objects
-represent the same persistent entity. A detached object and the managed object
-returned by merging it can be different Java objects with the same persistent
-identity.
+represent the same persistent entity.
+
+The root entity class is the highest entity class in an inheritance hierarchy.
+If an entity class has no entity superclass, it is itself the root.
+Section 3.6.10, reproduced below, defines persistent identity as a pair:
+the root entity class and the primary-key value.
+
+In the example from section 2.1, suppose {lit}`Person` is the root entity class
+and {lit}`Employee` extends it. An {lit}`Employee` with primary key 7 has
+persistent identity {lit}`(Person, 7)`. An instance of an unrelated root entity
+class {lit}`Book` with primary key 7 has identity {lit}`(Book, 7)`. Both primary
+keys may have Java type {lit}`Long` and the value 7; their persistent identities
+are different because their root entity classes differ.
+
+Now suppose that book has an author relationship to the person with identity
+{lit}`(Person, 7)`. The book's foreign key refers to the person, while the book's
+own identity remains {lit}`(Book, 7)`. Several books may refer to the same
+person. The uniqueness requirement above allows at most one entity instance for
+{lit}`(Person, 7)` in a given persistence context, with multiple relationships
+referring to it.
+
+A detached object and the managed object returned by merging it can be
+different Java objects with the same persistent identity. The detached object
+is outside the persistence context, so this does not violate that requirement.
 
 This distinction is why the model uses separate types for instances and
 persistent identities. It tracks which persistent identity belongs to each
-instance. It does not represent attributes, value types, or provider proxies.
+instance. It does not represent relationship references, other attributes,
+value types, or provider proxies.
 :::
 
 {specBoundary "begin:a132"}
@@ -233,21 +255,11 @@ The application must not change the value of the primary key of an entity instan
 {specBoundary "end:_footnotedef_14"}
 
 :::formalization
-*Formalization addition.* Section 3.6.10, reproduced below, defines persistent
-identity as a pair: the root entity class and the primary-key value. The root
-is the highest entity class in the inheritance hierarchy. If there is no entity
-superclass, the class itself is the root.
-
-In the example above, with {lit}`Person` as the root entity class,
-an {lit}`Employee` with primary key 7 has persistent identity
-{lit}`(Person, 7)`. An instance of an unrelated root entity class {lit}`Book`
-with primary key 7 has identity {lit}`(Book, 7)`. The equal key values alone
-do not make these the same persistent entity.
-
-The type {lit}`identity` represents the persistent identities introduced in
-sections 2.2.2 and 2.4. This is an abstract type: its declaration does not define
-a class/key pair or give access to the components of that pair. The model only
-needs to distinguish identities and record when two instances share one.
+*Formalization addition.* The type {lit}`identity` represents the persistent
+identities explained in section 2.2.2 and discussed above. This is an abstract
+type: its declaration does not define a class/key pair or give access to the
+components of that pair. The model only needs to distinguish identities and
+record when two instances share one.
 Distinct Java objects, such as a detached instance and its managed copy, can
 therefore have the same persistent identity. This type also includes a special
 value for the absence of an identity, {lit}`noIdentity`, which we declare in
@@ -342,41 +354,81 @@ holds the model's state.
 #gen_state
 ```
 
-We assume that at least one actual persistent identity is available. The symbol
-{lit}`∃` means “there exists,” and {lit}`≠` means “is not equal to”: there must be
-some value {lit}`i` other than {lit}`noIdentity`. The name in square brackets lets
-us refer to this assumption.
+So far, we have introduced the type {lit}`identity` and named one value of that
+type, {lit}`noIdentity`, to represent the absence of a persistent identity. We
+have not yet required the type to contain any other values. If {lit}`noIdentity`
+were its only value, the persist operation could never assign a persistent
+identity to a new instance.
+
+We therefore assume that the same type contains at least one other value that
+can represent a persistent identity. This does not mean that an instance already
+has that identity, or that there are enough identities for every instance.
+
+The symbol {lit}`∃` means “there exists,” and {lit}`≠` means “is not equal to”:
+there must be some value {lit}`i` other than {lit}`noIdentity`. The name in square
+brackets lets us refer to this assumption.
 
 ```lean
 assumption [nonempty_identities] ∃ i, i ≠ noIdentity
 ```
 
-We can now define context membership from the state we already record. A
-{lit}`ghost relation` names a condition derived from existing values, without
-adding independently stored state. We never update it separately.
+To express the specification's requirements and reason about them in the
+following proofs, we introduce names for three conditions on the model's state:
 
-An instance belongs to {lit}`context` when it has been created and is either
-managed or removed. The notation {lit}`(e : entity)` names the argument;
-{lit}`:=` introduces the definition, {lit}`∧` means “and,” and {lit}`∨` means “or.”
-This definition includes removed instances, so it differs from
-{lit}`EntityManager.contains()`, which excludes them.
+- {lit}`belongsToContext e`: instance {lit}`e` belongs to the persistence context
+  represented by this model.
+- {lit}`pendingRemoval e`: instance {lit}`e` is marked for database deletion.
+- {lit}`fresh i`: identity {lit}`i` is available to assign to an instance.
+
+These conditions are defined using the information we already record: which
+instances have been constructed, their lifecycle states, and their persistent
+identities. Veil calls these definitions *ghost relations*: they give us
+vocabulary for describing and reasoning about the state without adding
+independently stored information.
+
+The model describes one fixed persistence context. Each instance's lifecycle
+state is interpreted relative to that context. Constructing an instance leaves
+it in the {lit}`new` state, outside the context. Successfully persisting that
+instance changes its state to {lit}`managed`, establishing its association with
+the context.
+
+The condition {lit}`belongsToContext e` holds when {lit}`e` has been constructed
+and its lifecycle state is either {lit}`managed` or {lit}`removed`. The check
+{lit}`created e` only establishes that the object has been constructed; it says
+nothing about who constructed it. The {lit}`removed` state means marked for
+database deletion while still associated with the context, as defined in the
+specification above. This membership condition therefore differs from
+{lit}`EntityManager.contains()`, which excludes removed instances.
+
+When an operation changes {lit}`life e` to {lit}`detached`, the membership
+condition is no longer satisfied, so {lit}`belongsToContext e` is false.
+Updating the lifecycle state is sufficient; no separate membership update is
+needed. We use this condition in the identity uniqueness requirement and the
+merge operation.
+
+The Veil keyword {lit}`ghost relation` introduces the named condition below.
+The notation {lit}`(e : entity)` names the argument; {lit}`:=` introduces the
+definition, {lit}`∧` means “and,” and {lit}`∨` means “or.”
 
 ```lean
-ghost relation context (e : entity) := created e ∧ (life e = managed ∨ life e = removed)
+ghost relation belongsToContext (e : entity) := created e ∧ (life e = managed ∨ life e = removed)
 ```
 
-An instance is pending removal when it has been created and its lifecycle state
-is {lit}`removed`.
+The condition {lit}`pendingRemoval e` holds when instance {lit}`e` has been
+constructed and its lifecycle state is {lit}`removed`. It describes scheduled
+database deletion; the model does not represent the deletion itself.
 
 ```lean
 ghost relation pendingRemoval (e : entity) := created e ∧ life e = removed
 ```
 
-An identity is {lit}`fresh` when it is an actual persistent identity and no
-created instance has that identity. We exclude {lit}`noIdentity` because it
-represents the absence of an identity. The symbol {lit}`∀` means “for every”; in
-this condition, {lit}`→` means “implies.” Thus, for every instance {lit}`e`, if it
-has been created, its identity must differ from {lit}`i`.
+The condition {lit}`fresh i` holds when {lit}`i` is an actual persistent identity
+and no constructed instance has that identity. This includes checking detached
+instances, even though they are outside the context. We exclude
+{lit}`noIdentity` because it represents the absence of an identity.
+The symbol {lit}`∀` means “for every”; in this condition, {lit}`→` means
+“implies.” Thus, for every instance {lit}`e`, if it has been constructed, its
+identity must differ from {lit}`i`.
 
 ```lean
 ghost relation fresh (i : identity) := i ≠ noIdentity ∧ ∀ e, created e → pid e ≠ i
@@ -578,7 +630,8 @@ action Remove (e : entity) {
 ```
 
 The action does not change the instance's persistent identity. Since
-{lit}`context` includes removed instances, it also preserves context membership.
+{lit}`belongsToContext` includes removed instances, it also preserves context
+membership.
 The definition {lit}`pendingRemoval` becomes true when a managed instance is
 removed; deletion of a database record is outside the model.
 :::
@@ -744,7 +797,8 @@ action Detach (e : entity) {
 }
 ```
 
-After detachment, both {lit}`context e` and {lit}`pendingRemoval e` are false.
+After detachment, both {lit}`belongsToContext e` and {lit}`pendingRemoval e`
+are false.
 This represents leaving the context and, for a removed instance, cancelling
 pending removal. We do not record whether an instance was removed before it
 was detached, so the model does not enforce the specification's restriction on
@@ -886,9 +940,9 @@ action Merge (e target : entity) {
     life target := managed
   else if life e = detached then
     if created target then
-      require context target ∧ life target = managed ∧ pid target = pid e
+      require belongsToContext target ∧ life target = managed ∧ pid target = pid e
     else
-      require ∀ other, context other → pid other ≠ pid e
+      require ∀ other, belongsToContext other → pid other ≠ pid e
       created target := true
       life target := managed
       pid target := pid e
@@ -988,12 +1042,13 @@ that must hold in every reachable state. Here {lit}`E` and {lit}`OTHER` range
 over every pair of instances.
 
 ```lean
-safety [uniqueIdentity] context E ∧ context OTHER ∧ pid E = pid OTHER → E = OTHER
+safety [uniqueIdentity] belongsToContext E ∧ belongsToContext OTHER ∧ pid E = pid OTHER → E = OTHER
 ```
 
-Because {lit}`context` includes managed and removed instances, uniqueness
-applies to both. Detached instances are outside the context and may share an
-identity with a managed copy. The proofs below establish all three conditions.
+Because {lit}`belongsToContext` includes managed and removed instances,
+uniqueness applies to both. Detached instances are outside the context and may
+share an identity with a managed copy. The proofs below establish all three
+conditions.
 :::
 
 {specBoundary "begin:retrieval"}

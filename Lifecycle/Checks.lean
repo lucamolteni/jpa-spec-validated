@@ -97,9 +97,9 @@ def labelKey : FiniteLabel → String
 ```
 
 We list the three objects and define a Boolean check for context membership.
-It uses the same condition as {lit}`context`: an instance has been created and
-is managed or removed. In executable Boolean expressions, {lit}`&&` means
-“and,” {lit}`||` means “or,” and {lit}`==` tests equality.
+It uses the same condition as {lit}`belongsToContext`: an instance has been
+created and is managed or removed. In executable Boolean expressions,
+{lit}`&&` means “and,” {lit}`||` means “or,” and {lit}`==` tests equality.
 
 ```lean
 def entities : List (Fin 3) := [0, 1, 2]
