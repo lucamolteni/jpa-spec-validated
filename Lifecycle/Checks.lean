@@ -252,6 +252,15 @@ after the thirteenth call, detached object 0 and managed object 2 must share
 an identity. The final checks also confirm that detached instances are outside
 the context.
 
+We also run the §3.6.10 {lit}`entityManagerContains` observation on each
+constructed object. For object 0, the expected answers are false after
+construction, true after persist, and false as soon as remove succeeds.
+Persisting the removed object makes the answer true again. After detach,
+it becomes false, as expected for the detached argument in the
+[Persistence TCK's detachBasicTest1](https://github.com/jakartaee/persistence/blob/4.0.0-M4/tck/spec-tests/src/main/java/ee/jakarta/tck/persistence/core/entitytest/detach/basic/Client.java#L76-L100).
+That Java test clears the context to obtain a detached object. Our scenario
+reaches the same lifecycle state by detaching just that object.
+
 ```lean
 def checkScenarioState (step : Nat) (s : FiniteState) : IO Unit := do
   ensure (step ≤ 17) "scenario step range"
@@ -259,6 +268,10 @@ def checkScenarioState (step : Nat) (s : FiniteState) : IO Unit := do
   let expectedCreated : List (Fin 3) :=
     if step = 0 then [] else if step ≤ 3 then [0] else if step ≤ 12 then [0, 1] else entities
   ensure (entities.filter (createdAt s) == expectedCreated) s!"created entities at step {step}"
+  for (e, expected) in entities.zip (expectedPhases step) do
+    if e ∈ expectedCreated then
+      let observed := decide (entityManagerContains e finiteTheory s)
+      ensure (observed == (expected == .managed)) s!"contains({e}) at step {step}"
   if step ≥ 6 then ensure (pidAt s 0 != pidAt s 1) "distinct allocated identities"
   if step ≥ 13 then ensure (pidAt s 0 == pidAt s 2) "detached copy identity"
   let pending := entities.filter fun e => createdAt s e && phaseAt s e == .removed

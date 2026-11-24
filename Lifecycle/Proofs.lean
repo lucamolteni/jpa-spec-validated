@@ -298,7 +298,53 @@ theorem ELDetachedCorrect (th : Background E I) (execution : Nat → Snapshot E 
   · exact DetachedStep th (execution n) (execution (n + 1)) hn e hc hd
 ```
 
-The execution theorems are complete, so we close their namespace.
+What would {lit}`em.contains(book)` return immediately after a lifecycle call?
+In the Jakarta Persistence 4.0-M4 TCK, {lit}`persistBasicTest1` expects false
+for a newly constructed object. {lit}`removeBasicTest3` checks for true after
+persist, and {lit}`removeBasicTest5` expects false immediately after removal.
+These are observations an application can make within one context, before
+commit. See the [new object check](https://github.com/jakartaee/persistence/blob/4.0.0-M4/tck/spec-tests/src/main/java/ee/jakarta/tck/persistence/core/entitytest/persist/basic/Client.java#L82-L96),
+[persist check](https://github.com/jakartaee/persistence/blob/4.0.0-M4/tck/spec-tests/src/main/java/ee/jakarta/tck/persistence/core/entitytest/remove/basic/Client.java#L162-L173),
+and [remove check](https://github.com/jakartaee/persistence/blob/4.0.0-M4/tck/spec-tests/src/main/java/ee/jakarta/tck/persistence/core/entitytest/remove/basic/Client.java#L283-L299).
+
+We can prove the answer for every successful modeled action and every object
+{lit}`e` we might ask about. Persist makes its argument managed. Merge makes
+its returned target managed. Create, remove, and detach leave their argument
+outside the set reported by {lit}`contains()`. Refresh preserves the answer.
+For other objects the previous answer continues to hold. In particular, asking
+about a detached source after merge still gives false even when asking about
+its managed copy gives true.
+
+In the statement, {lit}`call` names the operation and its arguments.
+{lit}`NextTr` says this particular call takes the model from {lit}`s` to
+{lit}`t`. The {lit}`match` expression selects the rule for that operation.
+
+```lean
+theorem ELContainsAfterCall (th : Background E I) (s t : Snapshot E I)
+    (call : Label E I phase_IndT) (e : E)
+    (step : NextTr _ _ E I phase_IndT _ th s call t) :
+    entityManagerContains e th t ↔
+      match call with
+      | .Persist a | .Merge _ a => e = a ∨ entityManagerContains e th s
+      | .Create a | .Remove a | .Detach a => e ≠ a ∧ entityManagerContains e th s
+      | .Refresh _ => entityManagerContains e th s := by
+  cases call <;>
+    dsimp [NextTr, Create.ext.tr, Persist.ext.tr, Remove.ext.tr, Refresh.ext.tr,
+      Detach.ext.tr, Merge.ext.tr, belongsToContext, identityAvailable] at step <;>
+    (try dsimp [FieldRepresentation.get, FieldRepresentation.setSingle, getFrom, setIn, readFrom] at step) <;>
+    (try simp only [CanonicalField.set, FieldUpdatePat.match, IteratedArrow.curry,
+      IteratedArrow.uncurry, IteratedProd.patCmp] at step) <;>
+    (try dsimp at step) <;>
+    (try veil_simp +instances only [smtSimp] at step) <;>
+    dsimp [entityManagerContains, FieldRepresentation.get, getFrom] <;>
+    simp only [phase_EnumClass.new, phase_EnumClass.managed, phase_EnumClass.detached,
+      phase_EnumClass.removed] at step ⊢
+  case Persist a _ => cases h : s.e_phase a <;> grind
+  case Merge a _ _ => cases h : s.e_phase a <;> grind
+  all_goals grind
+```
+
+We close the namespace after the action and execution proofs.
 
 ```lean
 end EntityLifecycle

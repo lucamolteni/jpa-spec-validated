@@ -77,7 +77,7 @@ can be used directly.
 
 ## Proved guarantees
 
-[Lifecycle/Proofs.lean](Lifecycle/Proofs.lean) establishes three named theorems from
+[Lifecycle/Proofs.lean](Lifecycle/Proofs.lean) establishes four main theorems from
 the **same Veil actions** that are executed by the finite checks:
 
 | Theorem | Guarantee |
@@ -85,6 +85,7 @@ the **same Veil actions** that are executed by the finite checks:
 | `ELCorrect` | Every state of every initialized execution is consistent: new iff no identity, uncreated slots retain their defaults, and context members have unique persistent identities. |
 | `ELDetachedCorrect` | Each allowed transition, including stuttering, preserves the detached state of every already-created detached instance. |
 | `ELMergeSourceUnchanged` | A successful merge leaves its source's lifecycle state and persistent identity unchanged; a new or detached source differs from its returned target. |
+| `ELContainsAfterCall` | Gives the result of `EntityManager.contains(e)` for every object after each successful modeled call. For example, persist makes the answer true for its argument, and remove immediately makes it false. |
 
 `ELSpec` assumes initialization and allowed steps, **not** the invariant. Its
 consistency proof uses induction over execution time and the checked initialization
@@ -97,7 +98,7 @@ and explicit Lean proofs produce kernel-checked proof terms while Verso elaborat
 the code fences. There are no unfinished proofs.
 [The audit](Lifecycle/Audit.lean) checks every model theorem and rejects axioms
 other than Lean's standard `propext`, `Classical.choice`, and `Quot.sound`, including
-trusted solver results and compiler-based proof shortcuts. All three main theorems
+trusted solver results and compiler-based proof shortcuts. All four main theorems
 use only those three standard axioms. Executable model checks are separate
 regression evidence, not substitutes for kernel-checked proofs.
 
@@ -110,7 +111,9 @@ dependencies. It then runs the finite checker, which reads the four state and
 edge files in [verification/](verification/) and compares them with the graphs
 computed by Veil. A missing or extra state or transition fails the check. The
 driver also checks consistency, detached preservation, merge-source preservation,
-and excluded calls.
+and excluded calls. The scenario also checks the `contains()` answers for new,
+managed, removed, and detached objects against the expectations exercised by the
+[Jakarta Persistence 4.0-M4 TCK lifecycle tests](https://github.com/jakartaee/persistence/tree/4.0.0-M4/tck/spec-tests/src/main/java/ee/jakarta/tck/persistence/core/entitytest).
 
 The scenario reproduces all 17 operations, including ignored calls, cancellation
 of removal, and merge into fresh and existing targets. Every prefix must enable
@@ -150,8 +153,9 @@ checks and preview builds do not run it. Specification checksums are not checked
 The model covers successful effects of construction, `persist`, `remove`,
 `detach`, `refresh`, and `merge` in one context. Removed instances retain their
 identity and context membership until detached; eventual database deletion is
-unmodeled. `belongsToContext` includes removed instances and is not
-`EntityManager.contains()`.
+unmodeled. `belongsToContext` includes removed instances for identity uniqueness.
+The separate `entityManagerContains` observation implements the managed-instance
+test in §3.6.10.
 
 Fields, database contents, transactions, exception timing, cascades, orphan
 removal, versions, concurrency, context closure/clear, retrieval, serialization,

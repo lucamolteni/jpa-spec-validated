@@ -786,6 +786,22 @@ The effect of cascading persist, merge, remove, or detach is immediately visible
 :::formalization
 _Formalized Specification_
 
+For an entity instance in this model, the Java call {lit}`em.contains(e)`
+returns true exactly when {lit}`e` has been constructed and is managed by
+this context. For example, after {lit}`em.remove(e)` marks a managed book for
+deletion, its identity is still occupied in the context, but a call to
+{lit}`em.contains(e)` already returns false. This ghost relation reads the
+current state without changing it.
+
+```lean
+ghost relation entityManagerContains (e : entity)
+  := created e ∧ e_phase e = managed
+```
+
+The Jakarta Persistence 4.0-M4 TCK calls {lit}`contains()` on the same object
+immediately after {lit}`remove()` and checks for false before committing the
+transaction. See [removeBasicTest5 (PERSISTENCE:SPEC:671 and PERSISTENCE:SPEC:673)](https://github.com/jakartaee/persistence/blob/4.0.0-M4/tck/spec-tests/src/main/java/ee/jakarta/tck/persistence/core/entitytest/remove/basic/Client.java#L271-L299).
+
 We now state the conditions that the model must
 preserve. An {lit}`invariant` is a condition we prove true initially and after
 every allowed operation. Its name in square brackets identifies the condition

@@ -57,6 +57,9 @@ still detached after the next step. For {lit}`merge`, we can say more about
 the object passed as its argument. Every successful merge preserves that
 object’s lifecycle state and persistent identity. If the argument was new or
 detached, the object returned by {lit}`merge` is a different Java instance.
+We also prove what {lit}`EntityManager.contains()` reports after each modeled
+operation. For example, immediately after a managed instance is removed the
+answer is false, even though the instance still occupies its identity in the context.
 
 Our {ref "lifecycle-checks"}[finite regression checks]
 test whether the port preserves the behavior of the earlier TLA+ model
@@ -81,7 +84,7 @@ on. Lean calls a statement accepted without proof an *axiom*. A theorem can
 depend on an axiom indirectly, through another theorem used in its proof. Our
 {ref "lifecycle-audit"}[proof trust audit]
 follows those dependencies for every theorem in the
-lifecycle model. During each build, it checks that the three main guarantees
+lifecycle model. During each build, it checks that the main guarantees
 exist as theorems and that every model theorem depends only on axioms from an
 explicit list of three standard Lean axioms. An unfinished proof or a solver
 answer accepted without a checked proof would introduce an axiom outside that

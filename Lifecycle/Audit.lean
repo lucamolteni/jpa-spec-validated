@@ -23,7 +23,7 @@ statement accepted without a proof. We allow only three standard Lean axioms:
   type, a type that treats those elements as equal.
 
 The command {lit}`run_cmd` runs the following audit while Lean builds this
-section. It first checks that the three main results exist as theorems. It then
+section. It first checks that the main results exist as theorems. It then
 visits every theorem in the {lit}`EntityLifecycle` namespace and uses
 {lit}`collectAxioms` to find its dependencies. Any axiom outside the allowed list
 fails the build through {lit}`throwError`.
@@ -37,7 +37,7 @@ open Lean in
 run_cmd do
   let allowed := [``propext, ``Classical.choice, ``Quot.sound]
   let required := [``EntityLifecycle.ELCorrect, ``EntityLifecycle.ELDetachedCorrect,
-    ``EntityLifecycle.ELMergeSourceUnchanged]
+    ``EntityLifecycle.ELMergeSourceUnchanged, ``EntityLifecycle.ELContainsAfterCall]
   for name in required do
     unless (← getConstInfo name).isTheorem do
       throwError "Missing checked theorem: {name}"
@@ -67,10 +67,17 @@ instance stays detached after each step.
 #print axioms EntityLifecycle.ELDetachedCorrect
 ```
 
-Finally, we report the dependencies of the theorem that merge preserves its
+We also report the dependencies of the theorem that merge preserves its
 source's lifecycle state and identity and returns a distinct target for a new
 or detached source.
 
 ```lean
 #print axioms EntityLifecycle.ELMergeSourceUnchanged
+```
+
+The final command reports the dependencies of the theorem about the result
+of {lit}`EntityManager.contains()` after a lifecycle call.
+
+```lean
+#print axioms EntityLifecycle.ELContainsAfterCall
 ```
