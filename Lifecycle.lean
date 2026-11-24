@@ -93,9 +93,22 @@ list and cause the build to fail.
 
 {include 1 Lifecycle.Audit}
 
-# Open question
+# Open questions
 %%%
 tag := "open-question"
+number := false
+%%%
+
+Formalizing the specification requires us to make our interpretation of its
+wording explicit. Lean proves that the resulting model satisfies the properties
+we state. Where the wording is ambiguous, another interpretation may be just
+as plausible. The examples in this section show how writing the formalization
+differently can reveal that an expected property no longer holds. This helps
+us identify ambiguous wording in the original specification and catch bugs in
+the rules before anyone implements them.
+
+## Merging a removed entity
+%%%
 number := false
 %%%
 
