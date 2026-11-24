@@ -19,7 +19,7 @@ number := false
 
 
 :::formalization
-*Formalization addition: reading this formalization.*
+_Formalized Specification_
 
 This is documentation of an executable mathematical model, with selected
 entity foundations and the complete lifecycle section of
@@ -31,7 +31,7 @@ and other sections are omitted. The original numbers are retained, and each
 passage is followed by its referenced footnotes.
 Section 3.6 then follows in full.
 Original numbered passages, including unformalized requirements, retain their
-wording and structure. Blocks labelled *Formalization addition* and all Lean
+wording and structure. Blocks labelled _Formalized Specification_ and all Lean
 code are additions by this project; they are not normative specification text.
 
 Copyright (c) 2019, 2024 Eclipse Foundation.
@@ -83,7 +83,9 @@ The persistent state of an entity is represented by instance variables, which ma
 {specBoundary "end:_footnotedef_3"}
 
 :::formalization
-*Formalization addition.* An entity class describes a kind of Java object;
+_Formalized Specification_
+
+An entity class describes a kind of Java object;
 an entity instance is an individual object of that class. For example, suppose
 that both {lit}`Person` and {lit}`Employee` are entity classes and
 {lit}`Employee` extends {lit}`Person`. Creating two {lit}`Employee` objects
@@ -144,7 +146,9 @@ In particular:
 {specBoundary "end:value-type-reference-type"}
 
 :::formalization
-*Formalization addition.* Object identity tells us whether two references
+_Formalized Specification_
+
+Object identity tells us whether two references
 refer to the same Java object. Persistent identity tells us whether objects
 represent the same persistent entity.
 
@@ -255,7 +259,9 @@ The application must not change the value of the primary key of an entity instan
 {specBoundary "end:_footnotedef_14"}
 
 :::formalization
-*Formalization addition.* The type {lit}`identity` represents the persistent
+_Formalized Specification_
+
+The type {lit}`identity` represents the persistent
 identities explained in section 2.2.2 and discussed above. This is an abstract
 type: its declaration does not define a class/key pair or give access to the
 components of that pair. The model only needs to distinguish identities and
@@ -302,7 +308,9 @@ Certain operations of {lit}`EntityManager` modify the lifecycle state of an enti
 {specBoundary "end:a1929"}
 
 :::formalization
-*Formalization addition.* With entity instances and persistent identities defined
+_Formalized Specification_
+
+With entity instances and persistent identities defined
 in Chapter 2, we now describe their lifecycle states and operations within one
 persistence context.
 
@@ -497,7 +505,9 @@ Information about how lifecycle operations interact with transactions may be fou
 {specBoundary "end:lifecycle-operations"}
 
 :::formalization
-*Formalization addition.* We model individual lifecycle calls. Relationships
+_Formalized Specification_
+
+We model individual lifecycle calls. Relationships
 between entities and the propagation of calls through cascades are outside the
 model. Locking and concurrent access are also outside its scope, so there is no
 action for {lit}`lock()`.
@@ -515,7 +525,9 @@ An instance of an entity class may be created using the {lit}`new` operator. A n
 {specBoundary "end:entity-instance-creation"}
 
 :::formalization
-*Formalization addition.* We represent construction with a Veil {lit}`action`:
+_Formalized Specification_
+
+We represent construction with a Veil {lit}`action`:
 a named operation that describes one step of the model. Its argument
 {lit}`e` identifies the Java instance being constructed.
 
@@ -563,7 +575,9 @@ Ordinarily, the persist operation assigns a persistent identity to the entity. I
 {specBoundary "end:persist"}
 
 :::formalization
-*Formalization addition.* Persist requires a created instance whose lifecycle
+_Formalized Specification_
+
+Persist requires a created instance whose lifecycle
 state is new, managed, or removed. The two {lit}`require` conditions below
 exclude instances that have not been constructed and calls on detached instances.
 
@@ -622,7 +636,9 @@ The {lit}`remove()` method does not change the state held by fields of the entit
 {specBoundary "end:remove"}
 
 :::formalization
-*Formalization addition.* Remove requires a created instance that is not
+_Formalized Specification_
+
+Remove requires a created instance that is not
 detached. It changes a managed instance's lifecycle state to {lit}`removed`.
 For new or already removed instances, it leaves the state unchanged.
 
@@ -660,7 +676,9 @@ Portable applications must not depend on a specific timing of the removal operat
 {specBoundary "end:orphan-removal"}
 
 :::formalization
-*Formalization addition.* Orphan removal depends on changes to relationships
+_Formalized Specification_
+
+Orphan removal depends on changes to relationships
 between entities. We do not model those relationships, so there is no action
 for orphan removal.
 :::
@@ -721,7 +739,9 @@ Let {lit}`e` be an instance of an entity class associated with a persistence con
 {specBoundary "end:flush"}
 
 :::formalization
-*Formalization addition.* We do not model database contents or transactions,
+_Formalized Specification_
+
+We do not model database contents or transactions,
 so there is no action for {lit}`flush()`. The model does not describe when a
 database write or transaction commit occurs.
 :::
@@ -746,7 +766,9 @@ Let {lit}`e` be an instance of an entity class. If {lit}`e` is passed as the fir
 {specBoundary "end:refresh"}
 
 :::formalization
-*Formalization addition.* Only a managed entity may successfully refresh.
+_Formalized Specification_
+
+Only a managed entity may successfully refresh.
 Refresh reloads fields from the database, but neither fields nor database
 contents are part of our state. The action therefore leaves the modeled state
 unchanged.
@@ -791,7 +813,9 @@ Entities which referenced {lit}`e` before detachment continue to reference {lit}
 {specBoundary "end:detach"}
 
 :::formalization
-*Formalization addition.* Detach requires a created instance. It changes a
+_Formalized Specification_
+
+Detach requires a created instance. It changes a
 managed or removed instance to {lit}`detached` and leaves a new or already
 detached instance unchanged. Its persistent identity is preserved in every case.
 
@@ -837,7 +861,9 @@ When an entity instance is passed to an operation like {lit}`persist()` or {lit}
 {specBoundary "end:a1982"}
 
 :::formalization
-*Formalization addition.* The model represents explicit detachment through
+_Formalized Specification_
+
+The model represents explicit detachment through
 {lit}`Detach`. It does not include transactions, {lit}`clear()`, or context
 closure, so it does not model these other causes of detachment.
 :::
@@ -878,7 +904,9 @@ A {lit}`PersistenceException` is thrown if the application accesses an unavailab
 {specBoundary "end:detached-lazy-state"}
 
 :::formalization
-*Formalization addition.* We do not record field values or whether attributes
+_Formalized Specification_
+
+We do not record field values or whether attributes
 have been loaded. Access to lazy attributes is therefore outside the model.
 :::
 
@@ -916,7 +944,9 @@ The persistence provider must ignore unfetched attributes of detached instances 
 {specBoundary "end:merge"}
 
 :::formalization
-*Formalization addition.* Merge involves two instances: the source {lit}`e`
+_Formalized Specification_
+
+Merge involves two instances: the source {lit}`e`
 and the returned instance {lit}`target`. We include the result as an action
 argument so that the model can describe which object is returned; the Java
 method still takes only the source argument. The source must have been created
@@ -987,7 +1017,9 @@ A persistence provider is required to support:
 {specBoundary "end:detached-entities-and-serialization"}
 
 :::formalization
-*Formalization addition.* Serialization and deserialization are outside the
+_Formalized Specification_
+
+Serialization and deserialization are outside the
 model; there are no actions for transferring instances between Java virtual
 machines or persistence contexts.
 :::
@@ -1020,7 +1052,9 @@ The effect of cascading persist, merge, remove, or detach is immediately visible
 {specBoundary "end:managed-entities"}
 
 :::formalization
-*Formalization addition.* We now state the conditions that the model must
+_Formalized Specification_
+
+We now state the conditions that the model must
 preserve. An {lit}`invariant` is a condition we prove true initially and after
 every allowed operation. Its name in square brackets identifies the condition
 in later proofs.
@@ -1095,7 +1129,9 @@ Otherwise, if a record exists with persistent identity _({lit}`Y`,{lit}`k`)_ and
 {specBoundary "end:retrieval"}
 
 :::formalization
-*Formalization addition.* Database retrieval and query execution are outside
+_Formalized Specification_
+
+Database retrieval and query execution are outside
 the model. There are no actions for loading instances from existing records.
 :::
 
@@ -1129,7 +1165,9 @@ Persistence provider contracts for determining the load state of an entity or en
 {specBoundary "end:a2019"}
 
 :::formalization
-*Formalization addition.* The model does not record whether entities or
+_Formalized Specification_
+
+The model does not record whether entities or
 attributes have been loaded, so it has no counterpart to {lit}`isLoaded()`.
 The proofs that follow concern the lifecycle state and identity rules we have
 defined. They do not establish that a persistence provider implements the
@@ -1161,7 +1199,9 @@ complete specification.
 {specBoundary "end:_footnotedef_33"}
 
 :::formalization
-*Formalization addition — proving the lifecycle rules.* We prove the three
+_Formalized Specification_
+
+We prove the three
 conditions above in two stages: first for the initial state, then for each
 operation, assuming they held before the operation. This establishes that no
 allowed operation can take a consistent state to an inconsistent one.

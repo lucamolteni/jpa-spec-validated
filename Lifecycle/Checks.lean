@@ -8,11 +8,13 @@ open Verso.Genre.Manual.InlineLean
 set_option veil.smt.trust false
 set_option verso.code.warnLineLength 200
 
-#doc (Manual) "Formalization addition: finite regression checks" =>
+#doc (Manual) "Finite regression checks" =>
 %%%
 tag := "lifecycle-checks"
 number := false
 %%%
+
+_Formalized Specification_
 
 The proofs cover arbitrary entity and identity types. We also execute the
 model with small finite types to check specific behaviors and compare them

@@ -8,11 +8,13 @@ open Verso.Genre.Manual.InlineLean
 set_option veil.smt.trust false
 set_option verso.code.warnLineLength 200
 
-#doc (Manual) "Formalization addition: guarantees for complete executions" =>
+#doc (Manual) "Guarantees for complete executions" =>
 %%%
 tag := "lifecycle-proofs"
 number := false
 %%%
+
+_Formalized Specification_
 
 The lifecycle chapter proved that initialization establishes the three
 consistency conditions and that each operation preserves them. We now use

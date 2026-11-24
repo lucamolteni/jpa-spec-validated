@@ -41,7 +41,7 @@ extending or reviewing it.
   table of contents. Include parent headings needed for context without silently
   copying their unselected bodies. Show the full outline of included sections,
   and avoid an extra project-document wrapper above the specification chapters.
-- Keep additions visibly labelled **Formalization addition** and outside the
+- Keep additions visibly labelled *Formalized Specification* and outside the
   original-text boundaries. Explain omissions and modeling choices in those
   additions, without rewriting the specification to match the model.
 - Save newly included source fragments and record their provenance in

@@ -8,7 +8,7 @@ It begins with the selected prerequisite sections **§2.1**, **§2.2.2**, and
 referenced footnotes. Parent headings retain the specification's chapter and
 section hierarchy. These introduce entity classes, object identity, and
 persistent identity; their class and mapping requirements are not formalized.
-Clearly labelled **Formalization addition** passages and checked Lean/Veil code
+Clearly labelled *Formalized Specification* passages and checked Lean/Veil code
 explain the mathematical interpretation. Each chapter is a prose-first Verso
 Manual document: ordinary prose follows `#doc (Manual)`, and `lean` code fences
 contain the actual checked implementation. Later blocks and importing chapters

@@ -8,11 +8,13 @@ open Verso.Genre.Manual.InlineLean
 set_option veil.smt.trust false
 set_option verso.code.warnLineLength 200
 
-#doc (Manual) "Formalization addition: proof trust audit" =>
+#doc (Manual) "Proof trust audit" =>
 %%%
 tag := "lifecycle-audit"
 number := false
 %%%
+
+_Formalized Specification_
 
 The last check asks what assumptions our proofs depend on. An axiom is a
 statement accepted without a proof. We allow only three standard Lean axioms:

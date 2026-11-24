@@ -113,7 +113,7 @@ assert active is None, f"Unclosed specification passage: {active}"
 assert list(original) == [key for key, _ in model_sections()] + ["notice"], (
     "Missing or reordered passages")
 additions = [n for n in descendants(book) if "formalization" in n.attrs.get("class", "").split()]
-assert additions and all(normalize(n.text()).startswith("Formalization addition") for n in additions), (
+assert additions and all(normalize(n.text()).startswith("Formalized Specification") for n in additions), (
     "Formalization additions must be separately labelled")
 for fragment in prerequisites():
     source = Parser(Path(fragment["path"]).read_text()).root
