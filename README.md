@@ -1,13 +1,11 @@
 # Jakarta Persistence lifecycle, formalized in Lean and Veil
 
-A literate, executable model of one persistence context, alongside the complete
-**Jakarta Persistence 4.0-M4, §3.6, Entity Instance Lifecycle**. The chapter retains
-the specification's wording, headings, order, lists, references, and footnotes.
-It begins with the selected prerequisite sections **§2.1**, **§2.2.2**, and
-**§2.4** (only the text before §2.4.1), preserving their original numbers and
-referenced footnotes. Parent headings retain the specification's chapter and
-section hierarchy. These introduce entity classes, object identity, and
-persistent identity; their class and mapping requirements are not formalized.
+A literate, executable model of one persistence context, alongside selected
+sections of **Jakarta Persistence 4.0-M4**. Sections **§2.1** and **§2.4**
+introduce the types for entity instances and persistent identities. The excerpts
+from **§3.6** cover lifecycle states, construction, persist, remove, refresh,
+detach, merge, and identity uniqueness. Each excerpt keeps its original wording,
+number, references, and footnotes.
 Clearly labelled *Formalized Specification* passages and checked Lean/Veil code
 explain the mathematical interpretation. Each chapter is a prose-first Verso
 Manual document: ordinary prose follows `#doc (Manual)`, and `lean` code fences
@@ -145,8 +143,8 @@ unmodeled. `belongsToContext` includes removed instances and is not
 
 Fields, database contents, transactions, exception timing, cascades, orphan
 removal, versions, concurrency, context closure/clear, retrieval, serialization,
-and lazy/load state are unformalized. Their specification passages remain in the
-document unchanged. Refresh therefore stutters; flush and lock have no actions.
+and lazy/load state are unformalized. Refresh checks that the instance is managed.
+The model has no actions for flush or lock.
 The model neither executes Java nor certifies a provider's conformance.
 
 Pools are fixed, nonempty, and finite in the intended model. Exhaustion disables

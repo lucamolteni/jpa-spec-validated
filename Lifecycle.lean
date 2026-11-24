@@ -7,11 +7,11 @@ open Verso.Genre Manual
 
 #doc (Manual) "Jakarta Persistence: Entity Instance Lifecycle" =>
 
-This book introduces entities and identity with selected Jakarta Persistence
-4.0-M4 sections (§2.1, §2.2.2, and the text of §2.4 before its subsections),
-then presents the complete §3.6 together with an executable Lean/Veil model,
-its proofs, finite regression checks, and proof trust audit.
-All project commentary and checked Lean code are formalization additions.
+This book models how construction and lifecycle operations affect an entity's
+state and persistent identity in one persistence context. Sections 2.1 and 2.4
+introduce entity instances and identity. Selected parts of section 3.6 pair
+the lifecycle rules with checked Lean/Veil code. The proofs, finite regression
+checks, and proof trust audit follow.
 
 {include 1 Lifecycle.Model}
 

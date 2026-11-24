@@ -21,18 +21,11 @@ number := false
 :::formalization
 _Formalized Specification_
 
-This is documentation of an executable mathematical model, with selected
-entity foundations and the complete lifecycle section of
-[Jakarta Persistence 4.0-M4](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a1929)
-(May 25, 2026, DRAFT), authored by the Jakarta Persistence Team.
-We first reproduce the text directly under sections 2.1, 2.2.2, and 2.4.
-Parent headings preserve the specification's hierarchy; their unselected text
-and other sections are omitted. The original numbers are retained, and each
-passage is followed by its referenced footnotes.
-Section 3.6 then follows in full.
-Original numbered passages, including unformalized requirements, retain their
-wording and structure. Blocks labelled _Formalized Specification_ and all Lean
-code are additions by this project; they are not normative specification text.
+The numbered sections are excerpts from Jakarta Persistence 4.0-M4
+(May 25, 2026, DRAFT), authored by the Jakarta Persistence Team. Each excerpt keeps
+its original section number.
+Blocks labelled _Formalized Specification_ contain the project's explanations
+and checked Lean code.
 
 Copyright (c) 2019, 2024 Eclipse Foundation.
 Copyright (c) 2026 Eclipse Foundation AISBL. This software or document includes
@@ -109,76 +102,6 @@ does not record its class or fields.
 ```lean
 type entity
 ```
-:::
-
-{specBoundary "begin:a19"}
-
-## 2.2. Persistent Fields and Properties
-%%%
-number := false
-%%%
-
-{specBoundary "end:a19"}
-
-{specBoundary "begin:value-type-reference-type"}
-
-### 2.2.2. Value Types and Reference Types
-%%%
-number := false
-%%%
-
-In the Java language, an instance of a non-primitive type has a well-defined object identity unique to the instance and is passed _by reference_, meaning that assignment of the instance to a field, local variable, or method parameter, followed by later access to the assigned value, preserves the identity of the instance.
-
-In general, operations performed by a persistence provider are not required to preserve the object identity of a value stored in an attribute of an entity. The provider is permitted to modify the value held in the attribute to a new value with a distinct object identity. But such modifications never alter the _persistent_ representation of the entity because the Java object identity of a value held in an attribute is never part of the persistent state of the entity.
-
-In particular:
-
-- A basic type, an embeddable class, or any collection type is considered a _value type_, and the provider is not required to respect the integrity of shared references to an instance of such a type. If multiple fields referenced the same instance of a value type when an entity was made persistent, those fields may hold references to distinct instances of the value type when the entity is reloaded from the database.
-
-- An entity type is considered a _reference type_, and, instead of object identity, every managed instance of an entity type has a well-defined _persistent identity_. The persistence provider must respect its persistent identity by:
-
-  - preserving the persistent identity of an instance when it is made persistent and then later reloaded from the database, and
-
-  - ensuring that, within a single persistence context, at most one object represents the state of each distinct persistent identity, thus preserving the integrity of shared references to entities belonging to the given persistence context.
-
-  This requirement notwithstanding, the container is permitted to introduce an indirection or _proxy_ between the object which represents the state of an entity and attributes which hold references to the entity. Thus, object identity might still not be respected in a strict sense, not even for a reference type.
-
-{specBoundary "end:value-type-reference-type"}
-
-:::formalization
-_Formalized Specification_
-
-Object identity tells us whether two references
-refer to the same Java object. Persistent identity tells us whether objects
-represent the same persistent entity.
-
-The root entity class is the highest entity class in an inheritance hierarchy.
-If an entity class has no entity superclass, it is itself the root.
-Section 3.6.10, reproduced below, defines persistent identity as a pair:
-the root entity class and the primary-key value.
-
-In the example from section 2.1, suppose {lit}`Person` is the root entity class
-and {lit}`Employee` extends it. An {lit}`Employee` with primary key 7 has
-persistent identity {lit}`(Person, 7)`. An instance of an unrelated root entity
-class {lit}`Book` with primary key 7 has identity {lit}`(Book, 7)`. Both primary
-keys may have Java type {lit}`Long` and the value 7; their persistent identities
-are different because their root entity classes differ.
-
-Now suppose that book has an author relationship to the person with identity
-{lit}`(Person, 7)`. The book's foreign key refers to the person, while the book's
-own identity remains {lit}`(Book, 7)`. Several books may refer to the same
-person. The uniqueness requirement above allows at most one entity instance for
-{lit}`(Person, 7)` in a given persistence context, with multiple relationships
-referring to it.
-
-A detached object and the managed object returned by merging it can be
-different Java objects with the same persistent identity. The detached object
-is outside the persistence context, so this does not violate that requirement.
-
-This distinction is why the model uses separate types for instances and
-persistent identities. It tracks which persistent identity belongs to each
-instance. It does not represent relationship references, other attributes,
-value types, or provider proxies.
 :::
 
 {specBoundary "begin:a132"}
@@ -261,16 +184,23 @@ The application must not change the value of the primary key of an entity instan
 :::formalization
 _Formalized Specification_
 
-The type {lit}`identity` represents the persistent
-identities explained in section 2.2.2 and discussed above. This is an abstract
-type: its declaration does not define a class/key pair or give access to the
-components of that pair. The model only needs to distinguish identities and
-record when two instances share one.
-Distinct Java objects, such as a detached instance and its managed copy, can
-therefore have the same persistent identity. This type also includes a special
-value for the absence of an identity, {lit}`noIdentity`, which we declare in
-section 3.6. The key representations and mapping requirements above are outside
-the model.
+Object identity tells us whether two references point to the same Java object.
+Persistent identity tells us which persistent entity an object represents.
+The root entity class is the highest entity class in the inheritance hierarchy.
+Section 3.6.10 defines persistent identity as the pair consisting of that class
+and the primary-key value.
+
+In the example from section 2.1, suppose {lit}`Person` is the root entity class.
+An {lit}`Employee` with primary key 7 has persistent identity {lit}`(Person, 7)`.
+If {lit}`Book` is another root entity class, a book with key 7 has a different
+persistent identity, {lit}`(Book, 7)`. Conversely, a detached
+{lit}`Employee` and the managed copy returned by merge can be distinct Java
+objects with the same persistent identity.
+
+The model uses the abstract type {lit}`identity` to compare persistent identities.
+Its declaration gives no access to the class or key separately. The type also
+includes {lit}`noIdentity`, introduced in section 3.6 to represent the absence
+of a persistent identity.
 
 ```lean
 type identity
@@ -639,94 +569,6 @@ The definition {lit}`pendingRemoval` becomes true when a managed instance is
 removed; deletion of a database record is outside the model.
 :::
 
-{specBoundary "begin:orphan-removal"}
-
-### 3.6.5. Orphan Removal
-%%%
-number := false
-%%%
-
-The {lit}`orphanRemoval` member of the {lit}`@OneToOne` and {lit}`@OneToMany` relationship modelling annotations controls the enablement of _orphan removal_. When a relationship is mapped {lit}`orphanRemoval=true`, the remove operation is automatically applied to a child entity when the association between the child entity and its parent is destroyed.
-
-- If a managed entity instance is removed from the relationship by setting the relationship attribute to {lit}`null` or by removing the entity from the relationship collection, the remove operation is applied to the orphaned entity. The remove operation occurs when the persistence context is flushed, as defined below in [Section 3.6.6](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#flush). If an entity being orphaned is a detached, new, or removed entity, it is ignored by orphan removal.
-
-- If the remove operation is applied to a managed entity, the remove operation is cascaded to the relationship target in accordance with the rules of [Section 3.6.4](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#remove), and it is not therefore necessary to explicitly specify {lit}`cascade=REMOVE` for a relationship declared with {lit}`orphanRemoval=true`.\[[30](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#_footnotedef_30)\]
-
-Portable applications must not depend on a specific timing of the removal operation and must not reassign an entity that has been orphaned to another relationship, nor otherwise attempt to make it persistent, reversing the effect of orphan removal.
-
-{specBoundary "end:orphan-removal"}
-
-:::formalization
-_Formalized Specification_
-
-Orphan removal depends on changes to relationships
-between entities. We do not model those relationships, so there is no action
-for orphan removal.
-:::
-
-{specBoundary "begin:flush"}
-
-### 3.6.6. Synchronization to the Database
-%%%
-number := false
-%%%
-
-Usually, a persistence context is synchronized to the database as described below. However, as an exception, a persistence context of type {lit}`SynchronizationType.UNSYNCHRONIZED`, or an application-managed persistence context that has been created outside the scope of the current transaction, is only synchronized to the database if it has been explicitly joined to the current transaction by calling the {lit}`joinTransaction()` method of {lit}`EntityManager`, as specified below in [Section 3.7.3](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#synchronization-type).
-
-Assuming that the persistence context is joined to the current transaction, and that its flush mode was not explicitly set to {lit}`EXPLICIT`, the state of its managed entities is synchronized to the database at transaction commit. This synchronization involves writing to the database any pending modifications to the state of persistent entities and their relationships.
-
-A modification to the state of an entity might include an assignment of a new value to a persistent property or field of the entity, or even modification of a mutable value of a persistent property or field\[[31](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#_footnotedef_31)\].
-
-Synchronization to the database does not involve refreshing the state of managed entities with changes made to the database\[[32](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#_footnotedef_32)\].
-
-Bidirectional relationships between managed entities are persisted based on references held by the owning side of the relationship. It is the developer’s responsibility to keep the in-memory references held on the owning side and those held on the inverse side consistent with each other when they change. In the case of unidirectional one-to-one and one-to-many relationships, it is the developer’s responsibility to ensure that the semantics of the relationships are adhered to.\[[33](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#_footnotedef_33)\]
-
-> *Note*
-
-  It is particularly important to ensure that changes made to the inverse side of a relationship are reflected by corresponding changes on the owning side. The provider is not required to synchronize changes made only at the inverse end of an association. Failure to modify the owning side of a relationship typically results in the change being lost.
-
-When a transaction is active and the persistence context is joined to the transaction, the persistence provider runtime is permitted to flush pending modifications to the database. The application can influence the timing of synchronization via the {lit}`flush()` method of {lit}`EntityManager`, by setting the {lit}`FlushModeType`, or by specifying a {lit}`QueryFlushMode`.
-
-- When the {lit}`flush()` method is called, the provider must synchronize every pending modification made to every entity currently associated with the persistence context.
-
-- The {lit}`setFlushMode()` methods of the {lit}`EntityManager`, {lit}`Statement`, {lit}`Query`, {lit}`TypedQuery`, and {lit}`StoredProcedureQuery` interfaces can be used to control synchronization initiated automatically by the provider.
-
-  - The effect of {lit}`FlushModeType.AUTO` is defined in [Section 3.15.3](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a4374).
-
-  - If {lit}`FlushModeType.COMMIT` is specified, synchronization occurs at transaction commit; the persistence provider is permitted, but not required, to flush at other times.
-
-  - If {lit}`FlushMode.EXPLICIT` is specified, the persistence provider must never automatically flush modifications to the database.
-
-- The effect of the {lit}`FlushModeType` of the entity manager may be overridden during execution of a given query by explicitly specifying a {lit}`QueryFlushMode` via the {lit}`setQueryFlushMode()` method of {lit}`Statement`, {lit}`Query`, {lit}`TypedQuery`, or {lit}`StoredProcedureQuery`, as specified below in [Section 3.15.3](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a4374).
-
-If there is no transaction active or if the persistence context has not been joined to the current transaction, the persistence provider must not flush modifications to the database.
-
-Let {lit}`e` be an instance of an entity class associated with a persistence context when synchronization occurs:
-
-- If {lit}`e` is a managed entity:
-
-  - Any pending modifications to the values held by its persistent attributes are synchronized to the database by updating the record represented by {lit}`e`.
-
-  - The persist operation is applied to every entity {lit}`t` referenced by a relationship owned by {lit}`e` and annotated with the {lit}`cascade` element value {lit}`cascade=PERSIST` or {lit}`cascade=ALL` or mapped as such by the equivalent XML descriptor element.
-
-  - Every entity {lit}`t` referenced by a relationship owned by {lit}`e` which is _not_ annotated with the {lit}`cascade` element value {lit}`cascade=PERSIST` or {lit}`cascade=ALL` or mapped as such by the equivalent XML descriptor element is checked:
-
-    - if {lit}`t` is new or removed, an {lit}`IllegalStateException` is thrown and the transaction is marked for rollback, or the transaction commit fails; or
-
-    - if {lit}`t` is detached, the semantics depend upon the ownership of the relationship: if {lit}`e` owns the relationship, any changes to the relationship are synchronized with the database; otherwise, if {lit}`t` owns the relationship, the behavior is undefined.
-
-- If {lit}`e` is a removed entity, the record represented by {lit}`e` is removed from the database; no {lit}`cascade` options are relevant.
-
-{specBoundary "end:flush"}
-
-:::formalization
-_Formalized Specification_
-
-We do not model database contents or transactions,
-so there is no action for {lit}`flush()`. The model does not describe when a
-database write or transaction commit occurs.
-:::
-
 {specBoundary "begin:refresh"}
 
 ### 3.6.7. Refreshing an Entity Instance
@@ -823,73 +665,7 @@ passing such instances to later {lit}`EntityManager` calls.
 number := false
 %%%
 
-A managed entity instance associated with a persistence context becomes detached whenever:
-
-- the persistence context is a container-managed transaction-scoped persistence context, as defined in [Section 3.7.1](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#persistence-context-types), and the transaction associated with the persistence context commits, as specified in [Section 3.7.4](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a2048),
-
-- the persistence context is a container-managed persistence context, and the transaction associated with the persistence context rolls back, as specified in [Section 3.7.5](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a2049),
-
-- the entity is passed to the {lit}`detach()` method of the {lit}`EntityManager` associated with the persistence context,
-
-- the {lit}`clear()` method is called on the {lit}`EntityManager` associated with the persistence context, or
-
-- the {lit}`EntityManager` associated with the persistence context is closed.
-
-A detached entity instance continues to live outside the persistence context in which it was persisted or retrieved. Its state does not remain synchronized with the database record it represents.
-
-When an entity instance is passed to an operation like {lit}`persist()` or {lit}`merge()`, the persistence provider is permitted to use the value of the identifier and version fields or properties of an entity instance to determine whether the instance is new or detached.
-
 {specBoundary "end:a1982"}
-
-:::formalization
-_Formalized Specification_
-
-The model represents explicit detachment through
-{lit}`Detach`. It does not include transactions, {lit}`clear()`, or context
-closure, so it does not model these other causes of detachment.
-:::
-
-{specBoundary "begin:detached-lazy-state"}
-
-#### 3.6.9.1. Detached Entities and Lazy Loading
-%%%
-number := false
-%%%
-
-The _available_ state of a detached entity instance is the state which was already loaded when the instance became detached. The application may access the available state of available detached entity instances after the persistence context ends.
-
-The available state of a detached entity or of an embeddable object belonging to a detached entity includes every persistent field or property:
-
-- not explicitly mapped as {lit}`fetch=LAZY`,
-
-- accessed by the application while the entity was managed, or
-
-- fetched by means of an entity graph, as specified below in [Section 3.12](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a2397).
-
-If the persistent field or property is an association, the available state of an associated instance may be safely accessed if and only if the associated instance is available. The available instances include every entity instance:
-
-- retrieved using {lit}`find()`, {lit}`get()`, {lit}`findMultiple()`, or {lit}`getMultiple()`, as specified in [Section 3.6.11](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#retrieval),
-
-- returned by a query or explicitly requested in a fetch join or entity graph,
-
-- with a persistent attribute other than the primary key which was accessed by the application while the entity was managed, or
-
-- reachable from an available instance by navigating associations mapped explicitly or by default as {lit}`fetch=EAGER`.
-
-> *Note*
-
-  A persistence provider might allow access to the primary key of an unavailable associated entity.
-
-A {lit}`PersistenceException` is thrown if the application accesses an unavailable attribute, collection, or entity.
-
-{specBoundary "end:detached-lazy-state"}
-
-:::formalization
-_Formalized Specification_
-
-We do not record field values or whether attributes
-have been loaded. Access to lazy attributes is therefore outside the model.
-:::
 
 {specBoundary "begin:merge"}
 
@@ -980,31 +756,6 @@ construction and persist, this is a model limit, not a JPA exception. Copying
 fields and checking versions are outside the model.
 :::
 
-{specBoundary "begin:detached-entities-and-serialization"}
-
-#### 3.6.9.3. Detached Entities and Serialization
-%%%
-number := false
-%%%
-
-A persistence provider is required to support:
-
-1. the serialization of detached entity instances with unfetched lazy attributes instantiated by the persistence provider runtime,
-
-2. subsequent deserialization in a separate Java Virtual Machine with access to the same persistence provider runtime and the same entity classes, and
-
-3. merging of the deserialized instances in a new persistence context implemented by the same persistence provider runtime in the second virtual machine.
-
-{specBoundary "end:detached-entities-and-serialization"}
-
-:::formalization
-_Formalized Specification_
-
-Serialization and deserialization are outside the
-model; there are no actions for transferring instances between Java virtual
-machines or persistence contexts.
-:::
-
 {specBoundary "begin:managed-entities"}
 
 ### 3.6.10. Managed Entities
@@ -1068,124 +819,10 @@ safety [uniqueIdentity] belongsToContext E ∧ belongsToContext OTHER ∧ pid E 
 
 Because {lit}`belongsToContext` includes managed and removed instances,
 uniqueness applies to both. Detached instances are outside the context and may
-share an identity with a managed copy. The proofs below establish all three
-conditions.
-:::
+share an identity with a managed copy.
 
-{specBoundary "begin:retrieval"}
-
-### 3.6.11. Entity Instance Retrieval
-%%%
-number := false
-%%%
-
-The interface {lit}`EntityHandler`, found in [Section B.1](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#_entityhandler_) declares operations common to {lit}`EntityManager` and {lit}`EntityAgent`, including:
-
-- {lit}`find()`, {lit}`get()`, {lit}`findMultiple()`, and {lit}`getMultiple()`, which allow _retrieval_ of an entity or entities—​that is, given a persistent identity corresponding to a record which already exists in the database, or a list of persistent identities, these operations return an entity instance or instances representing the corresponding record or records.
-
-- the methods {lit}`createQuery()`, {lit}`createNamedQuery()`, {lit}`createNativeQuery()`, and {lit}`createStoredProcedureQuery()`, which allow creation and subsequent execution of a query which returns entity instances representing records which exist in the database.
-
-The status of an entity instance returned by an operation declared by {lit}`EntityHandler`, {lit}`EntityManager`, or {lit}`EntityAgent` depends on whether the operation is called on an entity manager or on an entity agent. Similarly, the status of an entity instance returned by an operation declared by {lit}`Query`, {lit}`TypedQuery`, or {lit}`StoredProcedureQuery` depends on whether the query object was obtained from an entity manager or from an entity agent.
-
-- For an {lit}`EntityAgent`, there is no associated persistence context, and so every entity instance returned by any operation of the agent itself, or of any query object obtained from the agent, is in the detached state. Operations on an entity agent never return the same entity instance twice.
-
-- For an {lit}`EntityManager`, every entity instance returned by any operation of the manager itself or of any query object obtained from the manager, with the exception noted in [Section 4.9.2](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a5500), is in the managed state and belongs to the persistence context associated with the entity manager. The instance remains in the managed state until the entity manager is closed and its persistence context is destroyed unless the instance is explicitly detached via a call to {lit}`detach()` or {lit}`clear()`, as specified above in [Section 3.6.9](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a1982). An entity manager is required to ensure that if an entity instance representing a given record already exists in its associated persistence context, then exactly that instance is returned by every operation that returns an entity representing the record.
-
-> *Note*
-
-  When a container-managed {lit}`EntityManager` with a transaction-scoped persistence context is called with no active transaction, the call appears to the client to return detached entity instances, as described below in [Section 3.7.2](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#entity-manager-transactions) and [Section 3.15.2](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#query-execution-transactions). However, strictly speaking, this is no more than a consequence of the extremely short lifetime of the persistence context in this scenario. From the point of view of the persistence provider, the operations of {lit}`EntityManager` return managed instances exactly as described here.
-
-A retrieval operation like {lit}`find()` or {lit}`get()` accepts an entity class and a primary key value. Retrieval is by nature polymorphic, and the given entity class might be a subclass in an entity class inheritance hierarchy. Therefore, given an entity type {lit}`X` and primary key {lit}`k`, any retrieval operation must:
-
-1. infer the persistent identity _({lit}`Y`,{lit}`k`)_, where {lit}`Y` is the root entity class of the entity class inheritance hierarchy to which {lit}`X` belongs,
-
-2. determine if there is a database record corresponding to that persistent identity, and
-
-3. determine if the database record is represented by an instance of an entity class assignable to {lit}`X`.
-
-If a record exists with persistent identity _({lit}`Y`,{lit}`k`)_ but it is not represented by an entity class assignable to {lit}`X`, a {lit}`PersistenceException` must be thrown.
-
-Otherwise, if a record exists with persistent identity _({lit}`Y`,{lit}`k`)_ and it is represented by an entity class {lit}`Z` assignable to {lit}`X`, an instance of {lit}`Z` with primary key {lit}`k` is returned to the caller.
-
-{specBoundary "end:retrieval"}
-
-:::formalization
-_Formalized Specification_
-
-Database retrieval and query execution are outside
-the model. There are no actions for loading instances from existing records.
-:::
-
-{specBoundary "begin:a2019"}
-
-### 3.6.12. Load State
-%%%
-number := false
-%%%
-
-An instance of an entity or embeddable class is considered _loaded_ if every attribute of the entity or embeddable class mapped (explicitly or by default) as {lit}`FetchType.EAGER`, including relationships and element collections, has been loaded from the database or assigned by the application. A loaded entity or embeddable object might have an unloaded attribute if and only if the attribute is mapped as {lit}`FetchType.LAZY`.
-
-The available state of an entity instance and its associated instances is described above in [Section 3.6.9.1](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#detached-lazy-state).
-
-An attribute of an entity or embedded class might also be considered _loaded_.
-
-- An embedded attribute, as defined in [Section 2.7](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a487) is considered to be loaded if the embedded attribute was loaded from the database or assigned by the application, and, if the attribute references a non-null instance, the embeddable instance is loaded.
-
-- A collection-valued attribute is considered to be loaded if the collection was loaded from the database or the value of the attribute was assigned by the application and, if the attribute references a non-null instance of the collection type, each element of the collection is considered to be loaded.
-
-- A single-valued relationship attribute is considered to be loaded if the relationship attribute was loaded from the database or assigned by the application and, if the attribute references a non-null entity instance, the entity instance is considered to be loaded.
-
-- A basic attribute is considered to be loaded if its state has been loaded from the database or assigned by the application.
-
-The {lit}`isLoaded()` methods of the {lit}`PersistenceUtil` interface found in [Section B.24](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#_persistenceutil_) determine the load state of a given entity or attribute of a given entity, regardless of the persistence unit with which the entity is associated, returning {lit}`true` if given entity or attribute is considered loaded according to the rules given above, or {lit}`false` otherwise.
-
-If the persistence unit to which the entity belongs is known, the {lit}`isLoaded()` methods of the interface {lit}`PersistenceUnitUtil` found in [Section B.24](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#_persistenceutil_) and described in [Section 7.11](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a12177) may be used instead.
-
-Persistence provider contracts for determining the load state of an entity or entity attribute are defined in [Section 9.9.1](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a13592).
-
-{specBoundary "end:a2019"}
-
-:::formalization
-_Formalized Specification_
-
-The model does not record whether entities or
-attributes have been loaded, so it has no counterpart to {lit}`isLoaded()`.
-The proofs that follow concern the lifecycle state and identity rules we have
-defined. They do not establish that a persistence provider implements the
-complete specification.
-:::
-
-{specBoundary "begin:_footnotedef_30"}
-
-[30](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#_footnoteref_30). If the parent is detached or new, or was previously removed before the orphan was associated with it, the remove operation is not applied to the entity being orphaned.
-
-{specBoundary "end:_footnotedef_30"}
-
-{specBoundary "begin:_footnotedef_31"}
-
-[31](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#_footnoteref_31). This includes, for example, modifications to elements of a {lit}`char[]` or {lit}`byte[]` array.
-
-{specBoundary "end:_footnotedef_31"}
-
-{specBoundary "begin:_footnotedef_32"}
-
-[32](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#_footnoteref_32). The {lit}`refresh()` method may be used to refresh entity state from the database, as described in [Section 3.6.7](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#refresh).
-
-{specBoundary "end:_footnotedef_32"}
-
-{specBoundary "begin:_footnotedef_33"}
-
-[33](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#_footnoteref_33). This might be an issue if unique constraints (such as those described for the default mappings in [Section 2.12.3.1](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a640) and [Section 2.12.5.1](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a764)) were not applied in the definition of the object/relational mapping.
-
-{specBoundary "end:_footnotedef_33"}
-
-:::formalization
-_Formalized Specification_
-
-We prove the three
-conditions above in two stages: first for the initial state, then for each
-operation, assuming they held before the operation. This establishes that no
-allowed operation can take a consistent state to an inconsistent one.
+We prove that the initial state satisfies all three conditions, then show that
+each operation preserves them whenever they hold before the operation.
 
 The command {lit}`#gen_spec` turns our initialization, actions, and properties
 into Lean definitions used by the proofs.
