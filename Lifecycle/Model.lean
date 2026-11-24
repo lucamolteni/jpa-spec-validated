@@ -395,7 +395,7 @@ following proofs, we introduce names for three conditions on the model's state:
 - {lit}`belongsToContext e`: instance {lit}`e` belongs to the persistence context
   represented by this model.
 - {lit}`pendingRemoval e`: instance {lit}`e` is marked for database deletion.
-- {lit}`fresh i`: identity {lit}`i` is available to assign to an instance.
+- {lit}`identityAvailable i` means identity {lit}`i` is available to assign to an instance.
 
 These conditions are defined using the information we already record: which
 instances have been constructed, their lifecycle states, and their persistent
@@ -436,7 +436,7 @@ ghost relation pendingRemoval (e : entity)
   := created e ∧ e_phase e = removed
 ```
 
-The condition {lit}`fresh i` holds when {lit}`i` is an actual persistent identity
+The condition {lit}`identityAvailable i` holds when {lit}`i` is an actual persistent identity
 and no constructed instance has that identity. This includes checking detached
 instances, even though they are outside the context. We exclude
 {lit}`noIdentity` because it represents the absence of an identity.
@@ -444,7 +444,7 @@ For every instance {lit}`e`, if it has been constructed, its
 identity must differ from {lit}`i`.
 
 ```lean
-ghost relation fresh (i : identity)
+ghost relation identityAvailable (i : identity)
   := i ≠ noIdentity ∧ ∀ e, created e → pid e ≠ i
 ```
 
@@ -562,8 +562,8 @@ Persist requires a created instance whose lifecycle
 state is new, managed, or removed. The two {lit}`require` conditions below
 exclude instances that have not been constructed and calls on detached instances.
 
-For a new instance, {lit}`let i : identity :| fresh i` chooses an identity
-satisfying {lit}`fresh`. The symbol {lit}`:|` introduces the condition on that
+For a new instance, {lit}`let i : identity :| identityAvailable i` chooses an
+available identity. The symbol {lit}`:|` introduces the condition on that
 choice. Any identity satisfying it is allowed, and the proofs must cover every
 such choice. The action assigns this identity and makes the instance managed.
 
@@ -576,7 +576,7 @@ action Persist (e : entity) {
   require created e
   require e_phase e ≠ detached
   if e_phase e = new then
-    let i : identity :| fresh i
+    let i : identity :| identityAvailable i
     pid e := i
     e_phase e := managed
   else if e_phase e = removed then
@@ -587,8 +587,8 @@ action Persist (e : entity) {
 Identity assignment and the change to managed happen in one model step. This
 simplifies the specification's rules for delayed {lit}`IDENTITY` assignment.
 Assigned identities are never released for reuse in this model. In a finite
-model, persisting a new instance becomes impossible when no fresh identity
-remains. This limit does not represent a JPA exception.
+model, persisting a new instance becomes impossible when no identity is
+available. This limit does not represent a JPA exception.
 :::
 
 {specBoundary "begin:remove"}
@@ -934,7 +934,7 @@ method still takes only the source argument. The source must have been created
 and must not be removed.
 
 For a new source, the target must be an instance that has not yet been created.
-The action gives it a fresh identity and makes it managed. It leaves the source
+The action assigns it an available identity and makes it managed. It leaves the source
 new and without a persistent identity.
 
 For a detached source, an existing target must be managed and have the source's
@@ -951,7 +951,7 @@ action Merge (e target : entity) {
   require e_phase e ≠ removed
   if e_phase e = new then
     require ¬ created target
-    let i : identity :| fresh i
+    let i : identity :| identityAvailable i
     pid target := i
     created target := true
     e_phase target := managed
@@ -974,7 +974,7 @@ presence prevents creation of another target. We exclude this situation from
 the successful calls represented by the model.
 
 Creating a managed copy requires an entity value that has not yet been used.
-Merging a new source also requires a fresh identity, assigned in the same step.
+Merging a new source also requires an available identity, assigned in the same step.
 If either required value is unavailable, the action cannot occur. As with
 construction and persist, this is a model limit, not a JPA exception. Copying
 fields and checking versions are outside the model.
@@ -1260,7 +1260,7 @@ prove_veil_invariant_goal Create uniqueIdentity using tr by
 
 Persist gives a new instance an actual identity when making it managed, or
 makes a removed instance managed without changing its identity. It never
-modifies an uncreated instance. The {lit}`fresh` condition ensures that an
+modifies an uncreated instance. The {lit}`identityAvailable` condition ensures that an
 identity assigned to a new instance cannot collide with one in the context.
 
 ```lean
@@ -1326,10 +1326,10 @@ prove_veil_invariant_goal Detach uniqueIdentity using tr by
 ```
 
 Merge either returns an existing managed instance or creates a managed target.
-A new target receives an actual identity. For a new source that identity is
-fresh; for a detached source, creation requires that its identity is absent
-from the context. These conditions preserve uniqueness, while all other
-uncreated instances retain their defaults.
+A new target receives an actual identity. For a new source, merge assigns an
+available identity to the target. For a detached source, creation requires that
+the source's identity is absent from the context. These conditions preserve
+uniqueness, while all other uncreated instances retain their defaults.
 
 ```lean
 prove_veil_invariant_goal Merge identityOK using tr by

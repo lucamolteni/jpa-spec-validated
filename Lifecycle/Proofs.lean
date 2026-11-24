@@ -183,7 +183,7 @@ theorem ELMergeSourceUnchanged (th : Background E I) (s t : Snapshot E I)
     (hm : Merge.ext.tr _ _ E I phase_IndT _ e target th s t) :
     t.e_phase e = s.e_phase e ∧ t.pid e = s.pid e ∧
       (s.e_phase e = .new ∨ s.e_phase e = .detached → target ≠ e) := by
-  dsimp [Merge.ext.tr, belongsToContext, fresh] at hm
+  dsimp [Merge.ext.tr, belongsToContext, identityAvailable] at hm
   dsimp [FieldRepresentation.get, FieldRepresentation.setSingle, getFrom, setIn, readFrom] at hm
   simp only [CanonicalField.set, FieldUpdatePat.match, IteratedArrow.curry,
     IteratedArrow.uncurry, IteratedProd.patCmp] at hm
@@ -209,7 +209,7 @@ theorem DetachedStep (th : Background E I) (s t : Snapshot E I)
   rcases hn with ⟨label, ht⟩
   cases label <;>
     (try dsimp [NextTr, Create.ext.tr, Persist.ext.tr, Remove.ext.tr, Refresh.ext.tr,
-      Detach.ext.tr, Merge.ext.tr, belongsToContext, fresh] at ht) <;>
+      Detach.ext.tr, Merge.ext.tr, belongsToContext, identityAvailable] at ht) <;>
     (try dsimp [FieldRepresentation.get, FieldRepresentation.setSingle, getFrom, setIn, readFrom] at ht) <;>
     (try simp only [CanonicalField.set, FieldUpdatePat.match, IteratedArrow.curry,
       IteratedArrow.uncurry, IteratedProd.patCmp] at ht) <;>
