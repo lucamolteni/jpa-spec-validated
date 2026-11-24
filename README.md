@@ -94,11 +94,14 @@ regression evidence, not substitutes for kernel-checked proofs.
 
 ## Scenarios and migration evidence
 
-[The finite checks](Lifecycle/Checks.lean) execute Veil's generated enumerable
-transition system with three entities and two persistent identities (plus the
-no-identity marker). They compare every reachable state and every distinct edge
-with the original TLC graph, and check consistency, detached preservation,
-merge-source preservation, and excluded calls.
+[The finite checks](Lifecycle/Checks.lean) execute the current Veil model with
+three entities and two persistent identities (plus the no-identity marker).
+`sh scripts/check.sh` builds the proofs and runs the trust audit on their axiom
+dependencies. It then runs the finite checker, which reads the four state and
+edge files in [verification/](verification/) and compares them with the graphs
+computed by Veil. A missing or extra state or transition fails the check. The
+driver also checks consistency, detached preservation, merge-source preservation,
+and excluded calls.
 
 The scenario reproduces all 17 operations, including ignored calls, cancellation
 of removal, and merge into fresh and existing targets. Every prefix must enable
