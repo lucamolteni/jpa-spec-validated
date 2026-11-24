@@ -1,0 +1,1 @@
+window.docContents[103].resolve({"/#Jakarta-Persistence--3___-Entity-Operations":{"contents":"\n\n\n\n\n\n","context":"Jakarta Persistence","header":"3. Entity Operations","id":"/#Jakarta-Persistence--3___-Entity-Operations"}});

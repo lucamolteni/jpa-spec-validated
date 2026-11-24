@@ -1,0 +1,634 @@
+{"Verso.Genre.Manual.section":
+ {"title": "Sections or chapters of the manual",
+  "description": null,
+  "contents":
+  {"specification-license":
+   [{"id": "specification-license",
+     "data":
+     {"title": "Eclipse Foundation Specification License - v1.1",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "Eclipse Foundation Specification License - v1.1",
+        "shortTitle": null,
+        "number": null}]},
+     "address": "/"}],
+   "open-question":
+   [{"id": "open-question",
+     "data":
+     {"title": "Open question",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "Open question", "shortTitle": null, "number": null}]},
+     "address": "/"}],
+   "lifecycle-proofs":
+   [{"id": "lifecycle-proofs",
+     "data":
+     {"title": "Guarantees for complete executions",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "Guarantees for complete executions",
+        "shortTitle": null,
+        "number": null}]},
+     "address": "/"}],
+   "lifecycle-checks":
+   [{"id": "lifecycle-checks",
+     "data":
+     {"title": "Finite regression checks",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "Finite regression checks",
+        "shortTitle": null,
+        "number": null}]},
+     "address": "/"}],
+   "lifecycle-audit":
+   [{"id": "lifecycle-audit",
+     "data":
+     {"title": "Proof trust audit",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "Proof trust audit", "shortTitle": null, "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence--Eclipse-Foundation-Specification-License---v1___1--Disclaimers":
+   [{"id":
+     "Jakarta-Persistence--Eclipse-Foundation-Specification-License---v1___1--Disclaimers",
+     "data":
+     {"title": "Disclaimers",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "Eclipse Foundation Specification License - v1.1",
+        "shortTitle": null,
+        "number": null},
+       {"title": "Disclaimers", "shortTitle": null, "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___9___-Detached-Entities--3___6___9___2___-Merging-Detached-Entity-State":
+   [{"id":
+     "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___9___-Detached-Entities--3___6___9___2___-Merging-Detached-Entity-State",
+     "data":
+     {"title": "3.6.9.2. Merging Detached Entity State",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "3. Entity Operations", "shortTitle": null, "number": null},
+       {"title": "3.6. Entity Instance Lifecycle",
+        "shortTitle": null,
+        "number": null},
+       {"title": "3.6.9. Detached Entities",
+        "shortTitle": null,
+        "number": null},
+       {"title": "3.6.9.2. Merging Detached Entity State",
+        "shortTitle": null,
+        "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___9___-Detached-Entities":
+   [{"id":
+     "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___9___-Detached-Entities",
+     "data":
+     {"title": "3.6.9. Detached Entities",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "3. Entity Operations", "shortTitle": null, "number": null},
+       {"title": "3.6. Entity Instance Lifecycle",
+        "shortTitle": null,
+        "number": null},
+       {"title": "3.6.9. Detached Entities",
+        "shortTitle": null,
+        "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___8___-Evicting-an-Entity-Instance-from-the-Persistence-Context":
+   [{"id":
+     "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___8___-Evicting-an-Entity-Instance-from-the-Persistence-Context",
+     "data":
+     {"title":
+      "3.6.8. Evicting an Entity Instance from the Persistence Context",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "3. Entity Operations", "shortTitle": null, "number": null},
+       {"title": "3.6. Entity Instance Lifecycle",
+        "shortTitle": null,
+        "number": null},
+       {"title":
+        "3.6.8. Evicting an Entity Instance from the Persistence Context",
+        "shortTitle": null,
+        "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___7___-Refreshing-an-Entity-Instance":
+   [{"id":
+     "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___7___-Refreshing-an-Entity-Instance",
+     "data":
+     {"title": "3.6.7. Refreshing an Entity Instance",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "3. Entity Operations", "shortTitle": null, "number": null},
+       {"title": "3.6. Entity Instance Lifecycle",
+        "shortTitle": null,
+        "number": null},
+       {"title": "3.6.7. Refreshing an Entity Instance",
+        "shortTitle": null,
+        "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___4___-Removal":
+   [{"id":
+     "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___4___-Removal",
+     "data":
+     {"title": "3.6.4. Removal",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "3. Entity Operations", "shortTitle": null, "number": null},
+       {"title": "3.6. Entity Instance Lifecycle",
+        "shortTitle": null,
+        "number": null},
+       {"title": "3.6.4. Removal", "shortTitle": null, "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___3___-Persisting-an-Entity-Instance":
+   [{"id":
+     "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___3___-Persisting-an-Entity-Instance",
+     "data":
+     {"title": "3.6.3. Persisting an Entity Instance",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "3. Entity Operations", "shortTitle": null, "number": null},
+       {"title": "3.6. Entity Instance Lifecycle",
+        "shortTitle": null,
+        "number": null},
+       {"title": "3.6.3. Persisting an Entity Instance",
+        "shortTitle": null,
+        "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___2___-Entity-Instance-Creation":
+   [{"id":
+     "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___2___-Entity-Instance-Creation",
+     "data":
+     {"title": "3.6.2. Entity Instance Creation",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "3. Entity Operations", "shortTitle": null, "number": null},
+       {"title": "3.6. Entity Instance Lifecycle",
+        "shortTitle": null,
+        "number": null},
+       {"title": "3.6.2. Entity Instance Creation",
+        "shortTitle": null,
+        "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___1___-Lifecycle-Operations":
+   [{"id":
+     "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___1___-Lifecycle-Operations",
+     "data":
+     {"title": "3.6.1. Lifecycle Operations",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "3. Entity Operations", "shortTitle": null, "number": null},
+       {"title": "3.6. Entity Instance Lifecycle",
+        "shortTitle": null,
+        "number": null},
+       {"title": "3.6.1. Lifecycle Operations",
+        "shortTitle": null,
+        "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___10___-Managed-Entities":
+   [{"id":
+     "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle--3___6___10___-Managed-Entities",
+     "data":
+     {"title": "3.6.10. Managed Entities",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "3. Entity Operations", "shortTitle": null, "number": null},
+       {"title": "3.6. Entity Instance Lifecycle",
+        "shortTitle": null,
+        "number": null},
+       {"title": "3.6.10. Managed Entities",
+        "shortTitle": null,
+        "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle":
+   [{"id":
+     "Jakarta-Persistence--3___-Entity-Operations--3___6___-Entity-Instance-Lifecycle",
+     "data":
+     {"title": "3.6. Entity Instance Lifecycle",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "3. Entity Operations", "shortTitle": null, "number": null},
+       {"title": "3.6. Entity Instance Lifecycle",
+        "shortTitle": null,
+        "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence--3___-Entity-Operations":
+   [{"id": "Jakarta-Persistence--3___-Entity-Operations",
+     "data":
+     {"title": "3. Entity Operations",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "3. Entity Operations", "shortTitle": null, "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence--2___-Entities--2___4___-Primary-Keys-and-Entity-Identity":
+   [{"id":
+     "Jakarta-Persistence--2___-Entities--2___4___-Primary-Keys-and-Entity-Identity",
+     "data":
+     {"title": "2.4. Primary Keys and Entity Identity",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "2. Entities", "shortTitle": null, "number": null},
+       {"title": "2.4. Primary Keys and Entity Identity",
+        "shortTitle": null,
+        "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence--2___-Entities--2___1___-The-Entity-Class":
+   [{"id": "Jakarta-Persistence--2___-Entities--2___1___-The-Entity-Class",
+     "data":
+     {"title": "2.1. The Entity Class",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "2. Entities", "shortTitle": null, "number": null},
+       {"title": "2.1. The Entity Class", "shortTitle": null, "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence--2___-Entities":
+   [{"id": "Jakarta-Persistence--2___-Entities",
+     "data":
+     {"title": "2. Entities",
+      "shortTitle": null,
+      "sectionNum": null,
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null},
+       {"title": "2. Entities", "shortTitle": null, "number": null}]},
+     "address": "/"}],
+   "Jakarta-Persistence":
+   [{"id": "Jakarta-Persistence",
+     "data":
+     {"title": "Jakarta Persistence",
+      "shortTitle": null,
+      "sectionNum": "",
+      "searchPriority": 50,
+      "context":
+      [{"title": "Jakarta Persistence", "shortTitle": null, "number": null}]},
+     "address": "/"}]}},
+ "Verso.Genre.Manual.example":
+ {"title": "Verso.Genre.Manual.example",
+  "description": null,
+  "contents":
+  {"main":
+   [{"id": "main",
+     "data":
+     {"/#main":
+      {"display": "main",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.successors":
+   [{"id": "EntityLifecycle___successors",
+     "data":
+     {"/#EntityLifecycle___successors":
+      {"display": "successors",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.stateKey":
+   [{"id": "EntityLifecycle___stateKey",
+     "data":
+     {"/#EntityLifecycle___stateKey":
+      {"display": "stateKey",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.scenario":
+   [{"id": "EntityLifecycle___scenario",
+     "data":
+     {"/#EntityLifecycle___scenario":
+      {"display": "scenario",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.runChecks":
+   [{"id": "EntityLifecycle___runChecks",
+     "data":
+     {"/#EntityLifecycle___runChecks":
+      {"display": "runChecks",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.pidAt":
+   [{"id": "EntityLifecycle___pidAt",
+     "data":
+     {"/#EntityLifecycle___pidAt":
+      {"display": "pidAt",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.phase_EnumClass.removed":
+   [{"id": "EntityLifecycle___phase_EnumClass___removed",
+     "data":
+     {"/#EntityLifecycle___phase_EnumClass___removed":
+      {"display": "removed",
+       "context":
+       ["Jakarta Persistence",
+        "3. Entity Operations",
+        "3.6. Entity Instance Lifecycle"]}},
+     "address": "/"}],
+   "EntityLifecycle.phase_EnumClass.new":
+   [{"id": "EntityLifecycle___phase_EnumClass___new",
+     "data":
+     {"/#EntityLifecycle___phase_EnumClass___new":
+      {"display": "new",
+       "context":
+       ["Jakarta Persistence",
+        "3. Entity Operations",
+        "3.6. Entity Instance Lifecycle"]}},
+     "address": "/"}],
+   "EntityLifecycle.phase_EnumClass.managed":
+   [{"id": "EntityLifecycle___phase_EnumClass___managed",
+     "data":
+     {"/#EntityLifecycle___phase_EnumClass___managed":
+      {"display": "managed",
+       "context":
+       ["Jakarta Persistence",
+        "3. Entity Operations",
+        "3.6. Entity Instance Lifecycle"]}},
+     "address": "/"}],
+   "EntityLifecycle.phase_EnumClass.detached":
+   [{"id": "EntityLifecycle___phase_EnumClass___detached",
+     "data":
+     {"/#EntityLifecycle___phase_EnumClass___detached":
+      {"display": "detached",
+       "context":
+       ["Jakarta Persistence",
+        "3. Entity Operations",
+        "3.6. Entity Instance Lifecycle"]}},
+     "address": "/"}],
+   "EntityLifecycle.phaseCode":
+   [{"id": "EntityLifecycle___phaseCode",
+     "data":
+     {"/#EntityLifecycle___phaseCode":
+      {"display": "phaseCode",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.phaseAt":
+   [{"id": "EntityLifecycle___phaseAt",
+     "data":
+     {"/#EntityLifecycle___phaseAt":
+      {"display": "phaseAt",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.labelKey":
+   [{"id": "EntityLifecycle___labelKey",
+     "data":
+     {"/#EntityLifecycle___labelKey":
+      {"display": "labelKey",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.inContext":
+   [{"id": "EntityLifecycle___inContext",
+     "data":
+     {"/#EntityLifecycle___inContext":
+      {"display": "inContext",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.finiteTheory":
+   [{"id": "EntityLifecycle___finiteTheory",
+     "data":
+     {"/#EntityLifecycle___finiteTheory":
+      {"display": "finiteTheory",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.finiteSystem":
+   [{"id": "EntityLifecycle___finiteSystem",
+     "data":
+     {"/#EntityLifecycle___finiteSystem":
+      {"display": "finiteSystem",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.expectedPhases":
+   [{"id": "EntityLifecycle___expectedPhases",
+     "data":
+     {"/#EntityLifecycle___expectedPhases":
+      {"display": "expectedPhases",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.entities":
+   [{"id": "EntityLifecycle___entities",
+     "data":
+     {"/#EntityLifecycle___entities":
+      {"display": "entities",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.ensure":
+   [{"id": "EntityLifecycle___ensure",
+     "data":
+     {"/#EntityLifecycle___ensure":
+      {"display": "ensure",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.createdAt":
+   [{"id": "EntityLifecycle___createdAt",
+     "data":
+     {"/#EntityLifecycle___createdAt":
+      {"display": "createdAt",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.compareFixture":
+   [{"id": "EntityLifecycle___compareFixture",
+     "data":
+     {"/#EntityLifecycle___compareFixture":
+      {"display": "compareFixture",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.checkState":
+   [{"id": "EntityLifecycle___checkState",
+     "data":
+     {"/#EntityLifecycle___checkState":
+      {"display": "checkState",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.checkScenarioState":
+   [{"id": "EntityLifecycle___checkScenarioState",
+     "data":
+     {"/#EntityLifecycle___checkScenarioState":
+      {"display": "checkScenarioState",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.checkScenario":
+   [{"id": "EntityLifecycle___checkScenario",
+     "data":
+     {"/#EntityLifecycle___checkScenario":
+      {"display": "checkScenario",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.checkGraph":
+   [{"id": "EntityLifecycle___checkGraph",
+     "data":
+     {"/#EntityLifecycle___checkGraph":
+      {"display": "checkGraph",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.Snapshot":
+   [{"id": "EntityLifecycle___Snapshot",
+     "data":
+     {"/#EntityLifecycle___Snapshot":
+      {"display": "Snapshot",
+       "context":
+       ["Jakarta Persistence", "Guarantees for complete executions"]}},
+     "address": "/"}],
+   "EntityLifecycle.LifecycleStep":
+   [{"id": "EntityLifecycle___LifecycleStep",
+     "data":
+     {"/#EntityLifecycle___LifecycleStep":
+      {"display": "LifecycleStep",
+       "context":
+       ["Jakarta Persistence", "Guarantees for complete executions"]}},
+     "address": "/"}],
+   "EntityLifecycle.Inv":
+   [{"id": "EntityLifecycle___Inv",
+     "data":
+     {"/#EntityLifecycle___Inv":
+      {"display": "Inv",
+       "context":
+       ["Jakarta Persistence", "Guarantees for complete executions"]}},
+     "address": "/"}],
+   "EntityLifecycle.InitialInvariant":
+   [{"id": "EntityLifecycle___InitialInvariant",
+     "data":
+     {"/#EntityLifecycle___InitialInvariant":
+      {"display": "InitialInvariant",
+       "context":
+       ["Jakarta Persistence", "Guarantees for complete executions"]}},
+     "address": "/"}],
+   "EntityLifecycle.FiniteState":
+   [{"id": "EntityLifecycle___FiniteState",
+     "data":
+     {"/#EntityLifecycle___FiniteState":
+      {"display": "FiniteState",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.FiniteLabel":
+   [{"id": "EntityLifecycle___FiniteLabel",
+     "data":
+     {"/#EntityLifecycle___FiniteLabel":
+      {"display": "FiniteLabel",
+       "context": ["Jakarta Persistence", "Finite regression checks"]}},
+     "address": "/"}],
+   "EntityLifecycle.ELSpec":
+   [{"id": "EntityLifecycle___ELSpec",
+     "data":
+     {"/#EntityLifecycle___ELSpec":
+      {"display": "ELSpec",
+       "context":
+       ["Jakarta Persistence", "Guarantees for complete executions"]}},
+     "address": "/"}],
+   "EntityLifecycle.ELMergeSourceUnchanged":
+   [{"id": "EntityLifecycle___ELMergeSourceUnchanged",
+     "data":
+     {"/#EntityLifecycle___ELMergeSourceUnchanged":
+      {"display": "ELMergeSourceUnchanged",
+       "context":
+       ["Jakarta Persistence", "Guarantees for complete executions"]}},
+     "address": "/"}],
+   "EntityLifecycle.ELDetachedCorrect":
+   [{"id": "EntityLifecycle___ELDetachedCorrect",
+     "data":
+     {"/#EntityLifecycle___ELDetachedCorrect":
+      {"display": "ELDetachedCorrect",
+       "context":
+       ["Jakarta Persistence", "Guarantees for complete executions"]}},
+     "address": "/"}],
+   "EntityLifecycle.ELCorrect":
+   [{"id": "EntityLifecycle___ELCorrect",
+     "data":
+     {"/#EntityLifecycle___ELCorrect":
+      {"display": "ELCorrect",
+       "context":
+       ["Jakarta Persistence", "Guarantees for complete executions"]}},
+     "address": "/"}],
+   "EntityLifecycle.DetachedStep":
+   [{"id": "EntityLifecycle___DetachedStep",
+     "data":
+     {"/#EntityLifecycle___DetachedStep":
+      {"display": "DetachedStep",
+       "context":
+       ["Jakarta Persistence", "Guarantees for complete executions"]}},
+     "address": "/"}],
+   "EntityLifecycle.Background":
+   [{"id": "EntityLifecycle___Background",
+     "data":
+     {"/#EntityLifecycle___Background":
+      {"display": "Background",
+       "context":
+       ["Jakarta Persistence", "Guarantees for complete executions"]}},
+     "address": "/"}],
+   "EntityLifecycle.Assumes":
+   [{"id": "EntityLifecycle___Assumes",
+     "data":
+     {"/#EntityLifecycle___Assumes":
+      {"display": "Assumes",
+       "context":
+       ["Jakarta Persistence", "Guarantees for complete executions"]}},
+     "address": "/"}]}},
+ "Verso.Genre.Manual.doc.tech":
+ {"title": "Terminology",
+  "description": "Definitions of technical terms",
+  "contents": {}},
+ "Verso.Genre.Manual.doc.tactic.conv":
+ {"title": "Conversion Tactics",
+  "description": "Tactics for performing targeted rewriting of subterms",
+  "contents": {}},
+ "Verso.Genre.Manual.doc.tactic":
+ {"title": "Tactic Documentation",
+  "description": "Detailed descriptions of tactics",
+  "contents": {}},
+ "Verso.Genre.Manual.doc.suggestion":
+ {"title": "Lean constant suggestions",
+  "description": "Search suggestions for Lean constants",
+  "contents": {}},
+ "Verso.Genre.Manual.doc.option":
+ {"title": "Compiler options", "description": null, "contents": {}},
+ "Verso.Genre.Manual.doc":
+ {"title": "Lean constant reference",
+  "description": "Documentation for Lean constants",
+  "contents": {}}}
