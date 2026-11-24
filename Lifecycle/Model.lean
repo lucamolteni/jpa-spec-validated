@@ -504,15 +504,6 @@ Information about how lifecycle operations interact with transactions may be fou
 
 {specBoundary "end:lifecycle-operations"}
 
-:::formalization
-_Formalized Specification_
-
-We model individual lifecycle calls. Relationships
-between entities and the propagation of calls through cascades are outside the
-model. Locking and concurrent access are also outside its scope, so there is no
-action for {lit}`lock()`.
-:::
-
 {specBoundary "begin:entity-instance-creation"}
 
 ### 3.6.2. Entity Instance Creation
@@ -527,26 +518,16 @@ An instance of an entity class may be created using the {lit}`new` operator. A n
 :::formalization
 _Formalized Specification_
 
-We represent construction with a Veil {lit}`action`:
-a named operation that describes one step of the model. Its argument
-{lit}`e` identifies the Java instance being constructed.
-
-The {lit}`require` condition allows this action only when {lit}`e` has not yet
-been created; {lit}`¬` means “not.” If the condition is false, there is no
-transition for this call. The action then sets {lit}`created e` to true.
-Values that an action does not assign remain unchanged, so {lit}`e_phase e`
-and {lit}`pid e` keep their initial values, {lit}`new` and {lit}`noIdentity`.
+You can't create already created entities
 
 ```lean
 action Create (e : entity) {
   require ¬ created e
   created e := true
+  assert ¬ belongsToContext e
+  assert pid e = noIdentity
 }
 ```
-
-The available values of {lit}`entity` are fixed for an execution. In a finite
-model, once every value represents a created instance, no further construction
-is possible. This is a limit of the model, not a modeled Java or JPA exception.
 :::
 
 {specBoundary "begin:persist"}
@@ -1243,9 +1224,22 @@ prove_veil_invariant_goal initializer uniqueIdentity using tr by
   grind
 ```
 
-Creation changes only whether an instance has been constructed. Its new state
-and absent identity already agree; every remaining uncreated instance keeps its
-defaults. The new instance is not in the context, so uniqueness is preserved.
+An unconstructed instance starts in phase {lit}`new` with {lit}`noIdentity`,
+and {lit}`Create` changes only its construction flag. Since only managed and
+removed instances belong to the context, both assertions in {lit}`Create` hold.
+The {lit}`doesNotThrow` proof checks this for every construction from a state
+satisfying the model's invariants. The {lit}`using wp` form works backward from
+the assertions to the conditions before construction.
+
+```lean
+prove_veil_invariant_goal Create doesNotThrow using wp by
+  have hd := phase_EnumClass.distinct (phase := phase)
+  simp [distinctN_cons] at hd
+  grind
+```
+
+Creation also preserves the three invariants. The new instance is outside the
+context, so it cannot duplicate the identity of a context member.
 
 The uniqueness proof explicitly uses the fact that the four lifecycle states
 are distinct. The command {lit}`have` names that fact {lit}`hd`, and
