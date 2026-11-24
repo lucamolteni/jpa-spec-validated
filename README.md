@@ -54,13 +54,11 @@ commentary. These markers do not duplicate the specification or implementation.
 
 ## Check and publish the book
 
-The **Check book** workflow checks the proofs, runs the finite model checks,
-and renders the HTML on pushes to `main` and pull requests targeting `main`.
-
-Publication is manual. To release the current book, open **Actions → Publish
-book → Run workflow**, select `main`, and click **Run workflow**. The workflow
-checks that revision and deploys its rendered HTML to GitHub Pages after the
-checks pass. [Publish book workflow](https://github.com/lucamolteni/jpa-spec-validated/actions/workflows/publish-book.yml)
+Every push to `main` triggers **Publish book**. It checks the proofs, runs the
+finite model checks, and renders the book at the latest commit in that push.
+Once the checks pass, it deploys that HTML to GitHub Pages. Pull requests
+targeting `main` run the same checks through **Check book**. To republish
+`main` manually, select **Run workflow** in [Publish book](https://github.com/lucamolteni/jpa-spec-validated/actions/workflows/publish-book.yml).
 
 ## Live preview
 

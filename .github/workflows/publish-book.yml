@@ -1,6 +1,13 @@
 name: Publish book
 
-on: workflow_dispatch
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: github-pages
+  queue: max
 
 permissions: {}
 
@@ -19,7 +26,6 @@ jobs:
     permissions:
       pages: write
       id-token: write
-    concurrency: github-pages
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
