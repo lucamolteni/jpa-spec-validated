@@ -14,8 +14,6 @@ tag := "lifecycle-proofs"
 number := false
 %%%
 
-_Formalized Specification_
-
 The lifecycle chapter proved that initialization establishes the three
 consistency conditions and that each operation preserves them. We now use
 those results to prove properties of entire executions: sequences of states
@@ -152,6 +150,27 @@ starts at position zero, where {lit}`InitialInvariant` applies. At each next
 position, either the state is unchanged or {lit}`LifecycleStep` preserves the
 conditions. The notation {lit}`∀ n` makes the result apply to every position.
 
+Consider one of those steps. Two books have been constructed. Book {lit}`a`
+is marked for removal and still occupies identity 7 in the context. Book
+{lit}`b` is new. Suppose the available identities are 8 and 9. Which next
+states can {lit}`persist(b)` produce?
+
+```diagram (cssWidth := "min(100%, 35em)")
+open Illuminate Diagram in
+let snapshot := fun name phase =>
+  namedWithAnchors name (frame (vsep 6 [text "a   removed · ID 7", text phase { bold := true }] .left)
+    (padding := 10) (cornerRadius := 4))
+let before := snapshot `before "b   new · no ID"
+let outcomes := vsep 18 [snapshot `eight "b   managed · ID 8", snapshot `nine "b   managed · ID 9"]
+hsep 62 [before, outcomes]
+  |>.connectEdge `before.east { point := `eight.west, arrowhead := some {} }
+  |>.connectEdge `before.east { point := `nine.west, arrowhead := some {} }
+```
+
+Each arrow is one possible result of the same call. Identity 7 is excluded
+because {lit}`a` still has it. The preservation proof covers every choice
+that {lit}`identityAvailable` permits, including both branches shown here.
+
 ```lean
 /-- Consistency holds at every time in every allowed execution. -/
 theorem ELCorrect (th : Background E I) (execution : Nat → Snapshot E I)
@@ -171,10 +190,32 @@ source is new or detached, it also returns a different Java object. In the
 statement below, {lit}`s` and {lit}`t` are the states before and after the call,
 and {lit}`Merge.ext.tr` is the transition relation generated from our action.
 
+Suppose a detached book and a managed book both represent ID 7. What does
+{lit}`result = merge(a)` return if {lit}`b` already refers to the managed book?
+
+```diagram (cssWidth := "min(100%, 31em)")
+open Illuminate Diagram in
+let refLabel := fun name label => namedWithAnchors name (text label { bold := true })
+let book := fun name phase =>
+  namedWithAnchors name (frame (vsep 5 [text "Book · ID 7", text phase { bold := true }])
+    (padding := 10) (cornerRadius := 4))
+let source := hsep 76 [refLabel `a "a", book `detached "detached"]
+let refs := vsep 16 [refLabel `b "b", refLabel `result "result"]
+let target := hsep 76 [refs, book `managed "managed"]
+vsep 20 [source, target] .right
+  |>.connectEdge `a.east { point := `detached.west, arrowhead := some {} }
+  |>.connectEdge `b.east { point := `managed.west, arrowhead := some {} }
+  |>.connectEdge `result.east { point := `managed.west, arrowhead := some {} }
+```
+
+Each arrow is a Java reference. Here {lit}`result == b` and {lit}`result != a`.
+The call returns the existing managed object. The argument keeps its detached
+state and its identity.
+
 The proof expands that relation and the derived conditions with {lit}`dsimp`,
 simplifies the generated state operations with {lit}`simp` and {lit}`veil_simp`,
 and lets {lit}`grind` establish the result. This proves the claim about the
-action already defined in the chapter.
+{lit}`Merge` action defined in §3.6.9.2.
 
 ```lean
 /-- A successful merge preserves the source's two modeled attributes. -/
@@ -223,6 +264,27 @@ theorem DetachedStep (th : Background E I) (s t : Snapshot E I)
 We extend the single-step result to every adjacent pair of execution states.
 If the state is unchanged, the instance is still detached; otherwise,
 {lit}`DetachedStep` supplies the result for the operation that occurred.
+
+Follow a book through a sequence of calls in one context. Initially {lit}`a`
+is managed with ID 7. After detaching it, we merge it and use the returned
+reference {lit}`b` for the remaining calls.
+
+```diagram (cssWidth := "min(100%, 32em)")
+open Illuminate Diagram in
+let heading := fun label => some (text label { bold := true })
+let cell := fun label => some (text label {})
+grid #[
+  #[heading "After the call", heading "Original (a)", heading "Copy (b)"],
+  #[cell "detach(a)", cell "detached", cell "—"],
+  #[cell "b = merge(a)", cell "detached", cell "managed"],
+  #[cell "remove(b)", cell "detached", cell "removed"],
+  #[cell "persist(b)", cell "detached", cell "managed"]
+] (hSpacing := 24) (vSpacing := 12)
+```
+
+Removing the copy and then cancelling its removal both change {lit}`b`.
+Read down the middle column to see what the detached-state theorem guarantees
+about {lit}`a` across those same steps.
 
 ```lean
 /-- The original always/next detached-state contract, including stuttering. -/

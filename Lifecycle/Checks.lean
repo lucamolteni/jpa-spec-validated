@@ -14,8 +14,6 @@ tag := "lifecycle-checks"
 number := false
 %%%
 
-_Formalized Specification_
-
 The proofs cover arbitrary entity and identity types. We also execute the
 model with small finite types to check specific behaviors and compare them
 with the earlier TLA+ model. All transitions come from the actions defined in
@@ -120,8 +118,9 @@ def ensure (ok : Bool) (message : String) : IO Unit :=
 
 For each state, we check the three consistency conditions directly: new iff
 no identity, defaults for uncreated instances, and unique identities among
-context members. These executable assertions check the finite results;
-the general proofs remain in the preceding chapters.
+context members. These executable assertions check the finite results.
+{ref "lifecycle-proofs"}[Guarantees for complete executions] gives the
+corresponding proof for arbitrary entity and identity types.
 
 ```lean
 def checkState (s : FiniteState) : IO Unit := do

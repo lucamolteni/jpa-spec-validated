@@ -3,6 +3,30 @@ import Lifecycle.Document
 
 open Verso Doc Genre Manual
 
+private partial def sectionIds (state : TraverseState) (part : Part Manual) : List String := Id.run do
+  let children := part.subParts.toList.flatMap (sectionIds state)
+  let some id := part.metadata.bind (·.id) | return children
+  let some dest := state.externalTags[id]? | return children
+  return dest.htmlId.toString :: children
+
+-- The pinned Verso renderer leaves the root contents links empty in single-page
+-- HTML. Fill them with the section IDs from the same document traversal.
+private def linkSinglePageContents : ExtraStep := fun mode config state book => do
+  unless mode matches .single do return
+  let path := config.destination / "html-single" / "index.html"
+  let html ← IO.FS.readFile path
+  let some start := html.find? "<ol class=\"section-toc\">" | return
+  let rest := html.sliceFrom start
+  let some stop := rest.find? "</section>" | return
+  let contents := (rest.sliceTo stop).toString
+  let first :: entries := contents.splitOn "<a href=\"\">" | return
+  if entries.isEmpty then return
+  let ids := book.subParts.toList.flatMap (sectionIds state)
+  unless ids.length == entries.length do
+    throw <| IO.userError "Section count differs from the single-page table of contents"
+  let links := String.join (ids.zipWith (fun id entry => s!"<a href=\"#{id}\">{entry}") entries)
+  IO.FS.writeFile path ((html.sliceTo start).toString ++ first ++ links ++ (rest.sliceFrom stop).toString)
+
 -- Load the compiled document without importing the finite-check driver's `main`.
 -- This keeps `lake env lean --run Lifecycle/Checks.lean` and all its declarations.
 unsafe def main (args : List String) : IO UInt32 := do
@@ -25,4 +49,4 @@ unsafe def main (args : List String) : IO UInt32 := do
       emitHtmlSingle := .immediately
       emitHtmlMulti := .no
       rootTocDepth := none
-    })
+    }) (extraSteps := [linkSinglePageContents])

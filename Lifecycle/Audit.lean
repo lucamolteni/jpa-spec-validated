@@ -14,8 +14,6 @@ tag := "lifecycle-audit"
 number := false
 %%%
 
-_Formalized Specification_
-
 The last check asks what assumptions our proofs depend on. An axiom is a
 statement accepted without a proof. We allow only three standard Lean axioms:
 
@@ -25,15 +23,14 @@ statement accepted without a proof. We allow only three standard Lean axioms:
   type, a type that treats those elements as equal.
 
 The command {lit}`run_cmd` runs the following audit while Lean builds this
-chapter. It first checks that the three main results exist as theorems. It then
+section. It first checks that the three main results exist as theorems. It then
 visits every theorem in the {lit}`EntityLifecycle` namespace and uses
 {lit}`collectAxioms` to find its dependencies. Any axiom outside the allowed list
 fails the build through {lit}`throwError`.
 
 This also rejects unfinished proofs and unchecked solver answers, which would
-introduce additional axioms. The executable checks in the previous chapter
-provide separate evidence about the finite model; they are not used as proofs
-of the general theorems.
+introduce additional axioms. {ref "lifecycle-checks"}[Finite regression checks]
+provides separate evidence about the finite model.
 
 ```lean
 open Lean in
