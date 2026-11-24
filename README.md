@@ -1,5 +1,7 @@
 # Jakarta Persistence lifecycle, formalized in Lean and Veil
 
+[Read the book on GitHub Pages](https://lucamolteni.github.io/jpa-spec-validated/).
+
 A literate, executable model of one persistence context, alongside selected
 sections of **Jakarta Persistence 4.0-M4**. Sections **§2.1** and **§2.4**
 introduce the types for entity instances and persistent identities. The excerpts
@@ -41,7 +43,6 @@ Run the Lean build and model checks with `sh scripts/check.sh`. Generate HTML
 separately with `lake exe generate-book`, or use the live preview below. HTML is
 generated under `.lake/build/book/html-single/`; open its `index.html`. The
 document includes the chapter, execution proofs, finite checks, and trust audit.
-No publication or upstream fork is part of this repository change.
 
 [Lifecycle.lean](Lifecycle.lean) assembles the four Manual documents.
 [Main.lean](Main.lean) uses Verso's `manualMain` to render the compiled book;
@@ -50,6 +51,21 @@ the document separately so the finite checker's existing `main` entry
 point remains available. `specBoundary` commands mark original passages for
 on-demand HTML review, and `formalization` directives visibly distinguish project
 commentary. These markers do not duplicate the specification or implementation.
+
+## Publish an update
+
+GitHub Pages serves the root of the `gh-pages` branch. After running the
+model checks, export the book into a fresh directory so the site includes only
+the assets for this edition.
+
+```sh
+book_export=$(mktemp -d)
+lake exe generate-book --output "$book_export"
+```
+
+In a separate checkout of `gh-pages`, replace the previous site files with the
+contents of `$book_export/html-single/`. Keep the root `.nojekyll` file so GitHub
+serves the Verso output directly. Commit and push that branch to publish the update.
 
 ## Live preview
 
