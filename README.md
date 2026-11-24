@@ -15,9 +15,9 @@ use those same declarations; there is no separate copy of the code for display.
 Start with [the lifecycle chapter](Lifecycle/Model.lean). Its source is
 [Jakarta Persistence 4.0-M4, May 25, 2026 (DRAFT)](https://jakarta.ee/specifications/persistence/4.0/jakarta-persistence-spec-4.0-M4.html#a1929),
 authored by the Jakarta Persistence Team. This is documentation of a mathematical
-model, not a replacement technical specification. Attribution and the complete
-Eclipse Foundation Specification License v1.1 notice are included in the chapter
-and in [the pinned source notice](spec/notice.html).
+model, not a replacement technical specification. The opening credits identify the source and authors. The complete
+Eclipse Foundation Specification License v1.1 closes the book and is also saved
+in [the pinned source notice](spec/notice.html).
 
 ## Build and read
 

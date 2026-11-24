@@ -1,4 +1,4 @@
-- [ ] Move license below everything (it's currently in the middle and it adds noise)
+- [x] Move license below everything (it's currently in the middle and it adds noise)
 - [x] Change the title to "Jakarta Persistence" as in the original specification
 - [ ] Check verification folder, is it a leftover of the previous TLA+ spec? If so, can we use to model validate the current specc?
 - [ ] Publish the website as viewable from GitHub (using GitHub pages) ? If so we should publish the website and just that by removing it from the .gitignore

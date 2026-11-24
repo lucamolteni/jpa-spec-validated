@@ -14,7 +14,8 @@ def main():
     checker = blocks[blocks.index("#gen_executable"):]
 
     # Read the two lines readers see, including their indentation.
-    _, _, note = chapter.partition("{lit}`lake run failOnDuplicateIdentity`")
+    book = Path("Lifecycle.lean").read_text(encoding="utf-8")
+    _, _, note = book.partition("{lit}`lake run failOnDuplicateIdentity`")
     diff = re.search(r"^```\n-([^\n]+)\n\+([^\n]+)\n```$", note, re.MULTILINE)
     if not diff:
         raise SystemExit("Missing one-line diff in the detached-merge open question")
