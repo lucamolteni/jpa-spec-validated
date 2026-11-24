@@ -1059,3 +1059,47 @@ TO THE EXTENT PERMITTED BY APPLICABLE LAW THE COPYRIGHT HOLDERS AND THE ECLIPSE 
 The name and trademarks of the copyright holders or the Eclipse Foundation AISBL may NOT be used in advertising or publicity pertaining to this document or its contents without specific, written prior permission. Title to copyright in this document will at all times remain with copyright holders.
 
 {specBoundary "end:notice"}
+
+# Open question
+%%%
+tag := "open-question"
+number := false
+%%%
+
+What should {lit}`merge(a)` do when {lit}`a` is detached
+and another object with the same persistent identity is marked for removal?
+Suppose {lit}`Book` has no version or relationships, a book with ID {lit}`7L`
+exists, and a transaction is active.
+
+```
+Book a = em.find(Book.class, 7L);
+em.detach(a);
+Book b = em.merge(a);  // a stays detached. b is managed.
+em.remove(b);
+Book c = em.merge(a);  // The argument is still a.
+```
+
+Two readings are plausible. The uniqueness rule in §3.6.10 suggests that
+{lit}`b` still occupies the identity and blocks creation of a copy. Read on its
+own, §3.6.9.2 calls for a new copy because there is no *managed* instance with
+that identity. To test the second reading, {lit}`lake run failOnDuplicateIdentity`
+applies the diff below to a temporary copy of the model's {lit}`Merge` action
+and runs Veil's finite model checker. The line is the condition for creating
+a fresh copy of the detached source {lit}`e` (here, {lit}`a`).
+
+```
+-      require ∀ other, belongsToContext other → pid other ≠ pid e
++      require ∀ other, e_phase other = managed → pid other ≠ pid e
+```
+
+The original line requires every object in the context to have a persistent
+identity different from {lit}`a`'s. After {lit}`remove(b)`, {lit}`b` still
+belongs to the context and has the same identity as {lit}`a`, so it blocks
+creation of {lit}`c`. This preserves uniqueness but leaves the outcome of the
+Java call open. The model specifies no successful merge for this case.
+
+The replacement checks only objects whose lifecycle state is {lit}`managed`.
+It skips {lit}`b` because its state is {lit}`removed`. The final {lit}`merge(a)`
+can now create {lit}`c`, leaving two objects in the context with the same
+persistent identity. Veil reports the resulting violation of {lit}`uniqueIdentity`
+(§3.6.10).

@@ -15,3 +15,9 @@ lean_exe «generate-book» where
   root := `Main
   needs := #[Lifecycle]
   supportInterpreter := true
+
+/-- Run the detached-merge counterexample printed in the lifecycle chapter. -/
+script failOnDuplicateIdentity do
+  let root := (← getWorkspace).root.dir
+  let scriptFile := root / "scripts" / "fail_on_duplicate_identity.py"
+  return ← (← IO.Process.spawn {cmd := "python3", args := #[scriptFile.toString], cwd := root}).wait
