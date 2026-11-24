@@ -1,4 +1,7 @@
-"""Compare rendered HTML directly with the original HTML, independently of markup conversion."""
+"""On-demand comparison of rendered HTML with the saved specification fragments.
+
+Run from the repository root after generating the book. No checksums are checked.
+"""
 from pathlib import Path
 import json
 import re

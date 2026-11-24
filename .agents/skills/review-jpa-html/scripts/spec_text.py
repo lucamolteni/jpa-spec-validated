@@ -1,4 +1,4 @@
-"""Deterministic markup-only adaptation of the pinned specification fragments.
+"""Parse the saved specification fragments for the on-demand HTML review.
 
 Uses only the Python standard library. Source prose is kept separate from
 formalization additions by Verso specification boundary commands.

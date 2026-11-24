@@ -36,22 +36,21 @@ From the repository root:
 ```sh
 lake build                            # Model, proofs, axiom audit, finite Veil check
 lake env lean --run Lifecycle/Checks.lean  # Exact graphs and 17-operation scenario
-python3 scripts/check_spec.py          # Original prose/structure preservation
 lake exe generate-book                # Generate the complete single-page book
-python3 scripts/check_html.py          # Compare rendered structure and wording
 ```
 
-Run all acceptance checks with `sh scripts/check.sh`. HTML is generated under
-`.lake/build/book/html-single/`; open its `index.html`. The document includes the
-chapter, execution proofs, finite checks, and trust audit. No publication or
-upstream fork is part of this repository change.
+Run the Lean build and model checks with `sh scripts/check.sh`. Generate HTML
+separately with `lake exe generate-book`, or use the live preview below. HTML is
+generated under `.lake/build/book/html-single/`; open its `index.html`. The
+document includes the chapter, execution proofs, finite checks, and trust audit.
+No publication or upstream fork is part of this repository change.
 
 [Lifecycle.lean](Lifecycle.lean) assembles the four Manual documents.
 [Main.lean](Main.lean) uses Verso's `manualMain` to render the compiled book;
 it promotes the model's chapters into the book's table of contents and loads
 the document separately so the finite checker's existing `main` entry
 point remains available. `specBoundary` commands mark original passages for
-preservation checks, and `formalization` directives visibly distinguish project
+on-demand HTML review, and `formalization` directives visibly distinguish project
 commentary. These markers do not duplicate the specification or implementation.
 
 ## Live preview
@@ -129,10 +128,12 @@ longer part of the working formalization. To reproduce the migration baselines,
 use [scripts/migration.py](scripts/migration.py) with the recorded TLC and TLAPS
 binaries; it restores the historical files into a temporary directory.
 
-The pinned specification fragments in `spec/` are checked by checksum and by a
-deterministic markup conversion. A separate HTML check compares the rendered
-chapter directly with those original fragments, including paragraph order,
-heading levels, nested lists, emphasis, code, reference targets, and notices.
+The saved specification fragments in `spec/` provide context for an optional
+[HTML review skill](.agents/skills/review-jpa-html/SKILL.md), invoked as `$review-jpa-html`.
+It compares the rendered chapter with those fragments, including paragraph order,
+heading levels, lists, references, and notices, and checks that the displayed Lean
+code matches the source. This review runs only when explicitly requested; routine
+checks and preview builds do not run it. Specification checksums are not checked.
 
 ## Scope and limitations
 

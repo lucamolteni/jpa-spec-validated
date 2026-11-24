@@ -1,0 +1,5 @@
+interface:
+  display_name: "Review JPA HTML"
+  short_description: "Review the JPA book HTML when requested"
+policy:
+  allow_implicit_invocation: false

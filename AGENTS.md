@@ -44,9 +44,8 @@ extending or reviewing it.
 - Keep additions visibly labelled **Formalization addition** and outside the
   original-text boundaries. Explain omissions and modeling choices in those
   additions, without rewriting the specification to match the model.
-- Pin newly included source fragments and record their provenance and checksums
-  in `spec/source.json`. Extend the source and rendered-HTML preservation checks
-  when adding passages or changing document structure.
+- Save newly included source fragments and record their provenance in
+  `spec/source.json`. Checksums are not an editing requirement.
 
 ## Keep documentation executable
 
@@ -55,11 +54,14 @@ extending or reviewing it.
 - Editorial changes should preserve model behavior, proof statements, and
   declaration order. Moving a declaration to its proper section is appropriate;
   changing the abstraction requires a separate, explicit explanation.
-- Do not weaken proofs or preservation checks to make a documentation edit pass.
-- For model or rendered-document changes, run `sh scripts/check.sh`. Inspect the
-  generated structure as well as the source, particularly declaration placement
-  and table-of-contents nesting. For prose/code rearrangement, also verify that
-  the checked code has not changed unintentionally.
+- Do not weaken proofs to make a documentation edit pass.
+- For model or proof changes, run `sh scripts/check.sh` to build Lean and run the
+  finite model checks. For prose-only changes, use the preview's checked build
+  and inspect the affected rendered sections. For prose/code rearrangement,
+  also verify that the checked code has not changed unintentionally.
+- Run the [HTML review skill](.agents/skills/review-jpa-html/SKILL.md) only when explicitly
+  requested. Specification wording, references, license, and full HTML structure
+  comparisons are on-demand reviews, not checks to run after every edit.
 
 ## Preview and version control
 
