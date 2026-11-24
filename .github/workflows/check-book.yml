@@ -17,6 +17,9 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-24.04
+    env:
+      # The prebuilt cvc5 libraries use glibc symbols from the host system.
+      LEAN_CC: /usr/bin/clang
     steps:
       - uses: actions/checkout@v7
         with:
@@ -24,7 +27,7 @@ jobs:
       - name: Install C++ build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang lld libc++-dev libc++abi-dev
+          sudo apt-get install -y clang lld libc++-dev libc++abi-dev libgmp-dev libuv1-dev
       - name: Build with the pinned Lean toolchain
         uses: leanprover/lean-action@v1
         with:
