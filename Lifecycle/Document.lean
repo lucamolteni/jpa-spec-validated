@@ -1,5 +1,6 @@
 import VersoManual
-import Veil
+-- Register the package's Veil options for the renderer.
+import Veil.Base
 
 open Lean
 open Verso ArgParse Doc Elab Genre Manual
