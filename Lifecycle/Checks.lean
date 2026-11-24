@@ -60,7 +60,7 @@ bodies connect the checks to Veil's generated storage for those values.
 
 ```lean
 def createdAt (s : FiniteState) (e : Fin 3) : Bool := (instFieldRepresentation (Fin 3) (Fin 3) phase_IndT .created).get s.created e
-def lifeAt (s : FiniteState) (e : Fin 3) : phase_IndT := (instFieldRepresentation (Fin 3) (Fin 3) phase_IndT .life).get s.life e
+def phaseAt (s : FiniteState) (e : Fin 3) : phase_IndT := (instFieldRepresentation (Fin 3) (Fin 3) phase_IndT .e_phase).get s.e_phase e
 def pidAt (s : FiniteState) (e : Fin 3) : Fin 3 := (instFieldRepresentation (Fin 3) (Fin 3) phase_IndT .pid).get s.pid e
 ```
 
@@ -79,7 +79,7 @@ identity. A semicolon separates one object's values from the next.
 ```lean
 def stateKey (s : FiniteState) : String :=
   String.intercalate ";" ([0, 1, 2].map fun (e : Fin 3) =>
-    s!"{if createdAt s e then 1 else 0},{phaseCode (lifeAt s e)},{(pidAt s e).val}")
+    s!"{if createdAt s e then 1 else 0},{phaseCode (phaseAt s e)},{(pidAt s e).val}")
 ```
 
 The function {lit}`labelKey` gives each operation and its arguments a stable
@@ -104,7 +104,7 @@ created and is managed or removed. In executable Boolean expressions,
 ```lean
 def entities : List (Fin 3) := [0, 1, 2]
 def inContext (s : FiniteState) (e : Fin 3) : Bool :=
-  createdAt s e && (lifeAt s e == .managed || lifeAt s e == .removed)
+  createdAt s e && (phaseAt s e == .managed || phaseAt s e == .removed)
 ```
 
 The helper {lit}`ensure` stops a check with an error message when a condition
@@ -124,9 +124,9 @@ the general proofs remain in the preceding chapters.
 ```lean
 def checkState (s : FiniteState) : IO Unit := do
   for e in entities do
-    ensure ((lifeAt s e == .new) == (pidAt s e == 0)) "identity invariant"
+    ensure ((phaseAt s e == .new) == (pidAt s e == 0)) "identity invariant"
     unless createdAt s e do
-      ensure (lifeAt s e == .new && pidAt s e == 0) "uncreated defaults"
+      ensure (phaseAt s e == .new && pidAt s e == 0) "uncreated defaults"
     for other in entities do
       if inContext s e && inContext s other && pidAt s e == pidAt s other then
         ensure (e == other) "unique context identity"
@@ -150,17 +150,17 @@ def successors (s : FiniteState) : IO (List (FiniteLabel × FiniteState)) := do
   for (label, t) in out.successes do
     checkState t
     for e in entities do
-      if createdAt s e && lifeAt s e == .detached then
-        ensure (lifeAt t e == .detached) "detached preservation"
+      if createdAt s e && phaseAt s e == .detached then
+        ensure (phaseAt t e == .detached) "detached preservation"
     match label with
     | .Merge e target =>
-      ensure (lifeAt t e == lifeAt s e && pidAt t e == pidAt s e) "merge source attributes"
-      if lifeAt s e == .new || lifeAt s e == .detached then
+      ensure (phaseAt t e == phaseAt s e && pidAt t e == pidAt s e) "merge source attributes"
+      if phaseAt s e == .new || phaseAt s e == .detached then
         ensure (target != e) "merge target distinctness"
-      ensure (lifeAt s e != .removed) "removed merge excluded"
-      if lifeAt s e == .managed then ensure (target == e) "managed merge target"
-    | .Refresh e => ensure (lifeAt s e == .managed) "nonmanaged refresh excluded"
-    | .Persist e | .Remove e => ensure (lifeAt s e != .detached) "detached call excluded"
+      ensure (phaseAt s e != .removed) "removed merge excluded"
+      if phaseAt s e == .managed then ensure (target == e) "managed merge target"
+    | .Refresh e => ensure (phaseAt s e == .managed) "nonmanaged refresh excluded"
+    | .Persist e | .Remove e => ensure (phaseAt s e != .detached) "detached call excluded"
     | _ => pure ()
   return out.successes
 
@@ -254,13 +254,13 @@ the context.
 ```lean
 def checkScenarioState (step : Nat) (s : FiniteState) : IO Unit := do
   ensure (step ≤ 17) "scenario step range"
-  ensure (entities.map (lifeAt s) == expectedPhases step) s!"phases at step {step}"
+  ensure (entities.map (phaseAt s) == expectedPhases step) s!"phases at step {step}"
   let expectedCreated : List (Fin 3) :=
     if step = 0 then [] else if step ≤ 3 then [0] else if step ≤ 12 then [0, 1] else entities
   ensure (entities.filter (createdAt s) == expectedCreated) s!"created entities at step {step}"
   if step ≥ 6 then ensure (pidAt s 0 != pidAt s 1) "distinct allocated identities"
   if step ≥ 13 then ensure (pidAt s 0 == pidAt s 2) "detached copy identity"
-  let pending := entities.filter fun e => createdAt s e && lifeAt s e == .removed
+  let pending := entities.filter fun e => createdAt s e && phaseAt s e == .removed
   let expectedPending : List (Fin 3) :=
     if step = 9 || step = 10 then [0] else if step = 16 then [2] else []
   ensure (pending == expectedPending) s!"pending removal at step {step}"

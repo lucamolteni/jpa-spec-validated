@@ -304,40 +304,54 @@ Certain operations of {lit}`EntityManager` modify the lifecycle state of an enti
 :::formalization
 *Formalization addition.* With entity instances and persistent identities defined
 in Chapter 2, we now describe their lifecycle states and operations within one
-persistence context. The model covers successful lifecycle effects; exception
-handling is outside the model.
+persistence context.
 
-The four lifecycle states defined above become an enumeration: a type whose
-values are listed explicitly.
+The four lifecycle states defined above become an enumeration:
 
 ```lean
 enum phase = {new, managed, detached, removed}
 ```
 
 We use {lit}`noIdentity` to represent the absence of a persistent identity.
-In Veil, {lit}`individual` declares a single value of the specified type, and
-{lit}`immutable` means that operations cannot change that value.
+In Veil, {lit}`individual` declares a single named value of the specified type,
+and {lit}`immutable` means that operations cannot change that value.
 
 ```lean
 immutable individual noIdentity : identity
 ```
 
-For each entity instance, {lit}`created` records whether it has been constructed.
-A {lit}`relation` records a true-or-false fact for its arguments. Here,
-{lit}`entity → Bool` means that each entity has a Boolean value, which operations
-can update. The word “relation” is mathematical terminology, not a JPA entity
-relationship.
+To check the lifecycle of the entities, we now define a relation and a function.
+The first one, {lit}`created`, tracks whether an instance has been constructed,
+whether or not it is attached to a persistence context. A newly constructed
+instance is transient, but {lit}`created` remains true when it becomes managed
+or detached. The function {lit}`e_phase` instead tracks the phase the instance is in.
+
+You might wonder why {lit}`e_phase e = new` is not enough and why we also need to
+track whether the instance has been constructed.
+
+That's because {lit}`new` is the initial value of {lit}`e_phase e`, and the model
+includes identifiers for possible instances that haven't yet been constructed.
+So we must define how {lit}`e_phase e` behaves even when the object represented by
+{lit}`e` doesn't exist yet, that is, when {lit}`created e = false`. In that case,
+{lit}`new` is only a placeholder.
+
+For each entity instance, we define a {lit}`created` relation to state whether
+it has been constructed. “Relation” here is a mathematical term used in proof
+assistants such as Lean. It does not mean a JPA relationship.
+A {lit}`relation` records a true-or-false fact for its arguments.
+In Lean, predicates commonly return {lit}`Prop`. Veil's stored relations return
+{lit}`Bool` so their values can be computed when executing the model checker.
+Here, {lit}`entity → Bool` means that each entity has a Boolean value, which
+operations can update.
 
 ```lean
 relation created : entity → Bool
 ```
 
-The function {lit}`life` records each instance's lifecycle state. A Veil
-{lit}`function` associates each argument with a value of the result type; like a
-relation, it can be updated by operations.
+The function {lit}`e_phase` records each instance's lifecycle state.
 
 ```lean
-function life : entity → phase
+function e_phase : entity → phase
 ```
 
 The function {lit}`pid` records each instance's persistent identity, or
@@ -355,18 +369,13 @@ holds the model's state.
 ```
 
 So far, we have introduced the type {lit}`identity` and named one value of that
-type, {lit}`noIdentity`, to represent the absence of a persistent identity. We
-have not yet required the type to contain any other values. If {lit}`noIdentity`
+type, {lit}`noIdentity`, to represent the absence of a persistent identity.
+We have not yet required the type to contain any other values. If {lit}`noIdentity`
 were its only value, the persist operation could never assign a persistent
 identity to a new instance.
 
 We therefore assume that the same type contains at least one other value that
-can represent a persistent identity. This does not mean that an instance already
-has that identity, or that there are enough identities for every instance.
-
-The symbol {lit}`∃` means “there exists,” and {lit}`≠` means “is not equal to”:
-there must be some value {lit}`i` other than {lit}`noIdentity`. The name in square
-brackets lets us refer to this assumption.
+can represent a persistent identity.
 
 ```lean
 assumption [nonempty_identities] ∃ i, i ≠ noIdentity
@@ -400,18 +409,14 @@ database deletion while still associated with the context, as defined in the
 specification above. This membership condition therefore differs from
 {lit}`EntityManager.contains()`, which excludes removed instances.
 
-When an operation changes {lit}`life e` to {lit}`detached`, the membership
+When an operation changes {lit}`e_phase e` to {lit}`detached`, the membership
 condition is no longer satisfied, so {lit}`belongsToContext e` is false.
-Updating the lifecycle state is sufficient; no separate membership update is
-needed. We use this condition in the identity uniqueness requirement and the
-merge operation.
-
-The Veil keyword {lit}`ghost relation` introduces the named condition below.
-The notation {lit}`(e : entity)` names the argument; {lit}`:=` introduces the
-definition, {lit}`∧` means “and,” and {lit}`∨` means “or.”
+We use this condition in the identity uniqueness requirement and the merge
+operation.
 
 ```lean
-ghost relation belongsToContext (e : entity) := created e ∧ (life e = managed ∨ life e = removed)
+ghost relation belongsToContext (e : entity)
+  := created e ∧ (e_phase e = managed ∨ e_phase e = removed)
 ```
 
 The condition {lit}`pendingRemoval e` holds when instance {lit}`e` has been
@@ -419,19 +424,20 @@ constructed and its lifecycle state is {lit}`removed`. It describes scheduled
 database deletion; the model does not represent the deletion itself.
 
 ```lean
-ghost relation pendingRemoval (e : entity) := created e ∧ life e = removed
+ghost relation pendingRemoval (e : entity)
+  := created e ∧ e_phase e = removed
 ```
 
 The condition {lit}`fresh i` holds when {lit}`i` is an actual persistent identity
 and no constructed instance has that identity. This includes checking detached
 instances, even though they are outside the context. We exclude
 {lit}`noIdentity` because it represents the absence of an identity.
-The symbol {lit}`∀` means “for every”; in this condition, {lit}`→` means
-“implies.” Thus, for every instance {lit}`e`, if it has been constructed, its
+For every instance {lit}`e`, if it has been constructed, its
 identity must differ from {lit}`i`.
 
 ```lean
-ghost relation fresh (i : identity) := i ≠ noIdentity ∧ ∀ e, created e → pid e ≠ i
+ghost relation fresh (i : identity)
+  := i ≠ noIdentity ∧ ∀ e, created e → pid e ≠ i
 ```
 
 Initially, no instances have been constructed. We give every possible instance
@@ -443,7 +449,7 @@ assigns a value.
 ```lean
 after_init {
   created E := false
-  life E := new
+  e_phase E := new
   pid E := noIdentity
 }
 ```
@@ -516,7 +522,7 @@ a named operation that describes one step of the model. Its argument
 The {lit}`require` condition allows this action only when {lit}`e` has not yet
 been created; {lit}`¬` means “not.” If the condition is false, there is no
 transition for this call. The action then sets {lit}`created e` to true.
-Values that an action does not assign remain unchanged, so {lit}`life e`
+Values that an action does not assign remain unchanged, so {lit}`e_phase e`
 and {lit}`pid e` keep their initial values, {lit}`new` and {lit}`noIdentity`.
 
 ```lean
@@ -573,13 +579,13 @@ so the modeled state remains unchanged.
 ```lean
 action Persist (e : entity) {
   require created e
-  require life e ≠ detached
-  if life e = new then
+  require e_phase e ≠ detached
+  if e_phase e = new then
     let i : identity :| fresh i
     pid e := i
-    life e := managed
-  else if life e = removed then
-    life e := managed
+    e_phase e := managed
+  else if e_phase e = removed then
+    e_phase e := managed
 }
 ```
 
@@ -623,9 +629,9 @@ For new or already removed instances, it leaves the state unchanged.
 ```lean
 action Remove (e : entity) {
   require created e
-  require life e ≠ detached
-  if life e = managed then
-    life e := removed
+  require e_phase e ≠ detached
+  if e_phase e = managed then
+    e_phase e := removed
 }
 ```
 
@@ -750,7 +756,7 @@ assignments in the body, this is an allowed step that preserves every value.
 
 ```lean
 action Refresh (e : entity) {
-  require created e ∧ life e = managed
+  require created e ∧ e_phase e = managed
 }
 ```
 :::
@@ -792,8 +798,8 @@ detached instance unchanged. Its persistent identity is preserved in every case.
 ```lean
 action Detach (e : entity) {
   require created e
-  if life e = managed ∨ life e = removed then
-    life e := detached
+  if e_phase e = managed ∨ e_phase e = removed then
+    e_phase e := detached
 }
 ```
 
@@ -931,20 +937,20 @@ the source itself and changes nothing. These cases form one action below.
 ```lean
 action Merge (e target : entity) {
   require created e
-  require life e ≠ removed
-  if life e = new then
+  require e_phase e ≠ removed
+  if e_phase e = new then
     require ¬ created target
     let i : identity :| fresh i
     pid target := i
     created target := true
-    life target := managed
-  else if life e = detached then
+    e_phase target := managed
+  else if e_phase e = detached then
     if created target then
-      require belongsToContext target ∧ life target = managed ∧ pid target = pid e
+      require belongsToContext target ∧ e_phase target = managed ∧ pid target = pid e
     else
       require ∀ other, belongsToContext other → pid other ≠ pid e
       created target := true
-      life target := managed
+      e_phase target := managed
       pid target := pid e
   else
     require target = e
@@ -1025,7 +1031,7 @@ directions. The uppercase variable {lit}`E` makes this statement apply to every
 entity value.
 
 ```lean
-invariant [identityOK] (life E = new ↔ pid E = noIdentity)
+invariant [identityOK] (e_phase E = new ↔ pid E = noIdentity)
 ```
 
 An instance that has not been constructed must retain its initial lifecycle
@@ -1033,7 +1039,7 @@ state and identity. Once an instance has been created, this condition places
 no further restriction on it.
 
 ```lean
-invariant [uncreatedOK] ¬ created E → life E = new ∧ pid E = noIdentity
+invariant [uncreatedOK] ¬ created E → e_phase E = new ∧ pid E = noIdentity
 ```
 
 Finally, two instances in the context with the same persistent identity must

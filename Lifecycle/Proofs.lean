@@ -179,8 +179,8 @@ action already defined in the chapter.
 theorem ELMergeSourceUnchanged (th : Background E I) (s t : Snapshot E I)
     (e target : E) (_hs : Inv th s)
     (hm : Merge.ext.tr _ _ E I phase_IndT _ e target th s t) :
-    t.life e = s.life e ∧ t.pid e = s.pid e ∧
-      (s.life e = .new ∨ s.life e = .detached → target ≠ e) := by
+    t.e_phase e = s.e_phase e ∧ t.pid e = s.pid e ∧
+      (s.e_phase e = .new ∨ s.e_phase e = .detached → target ≠ e) := by
   dsimp [Merge.ext.tr, belongsToContext, fresh] at hm
   dsimp [FieldRepresentation.get, FieldRepresentation.setSingle, getFrom, setIn, readFrom] at hm
   simp only [CanonicalField.set, FieldUpdatePat.match, IteratedArrow.curry,
@@ -202,8 +202,8 @@ The proof considers each action and simplifies its transition definition.
 /-- Every allowed operation preserves an already-created detached entity. -/
 theorem DetachedStep (th : Background E I) (s t : Snapshot E I)
     (hn : NextStep _ _ E I phase_IndT _ th s t)
-    (e : E) (hc : s.created e = true) (hd : s.life e = .detached) :
-    t.life e = .detached := by
+    (e : E) (hc : s.created e = true) (hd : s.e_phase e = .detached) :
+    t.e_phase e = .detached := by
   rcases hn with ⟨label, ht⟩
   cases label <;>
     (try dsimp [NextTr, Create.ext.tr, Persist.ext.tr, Remove.ext.tr, Refresh.ext.tr,
@@ -226,8 +226,8 @@ If the state is unchanged, the instance is still detached; otherwise,
 /-- The original always/next detached-state contract, including stuttering. -/
 theorem ELDetachedCorrect (th : Background E I) (execution : Nat → Snapshot E I)
     (h : ELSpec th execution) :
-    ∀ n e, (execution n).created e = true → (execution n).life e = .detached →
-      (execution (n + 1)).life e = .detached := by
+    ∀ n e, (execution n).created e = true → (execution n).e_phase e = .detached →
+      (execution (n + 1)).e_phase e = .detached := by
   intro n e hc hd
   rcases h.2 n with heq | hn
   · simpa only [heq] using hd
