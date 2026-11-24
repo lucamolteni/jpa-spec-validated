@@ -5,7 +5,7 @@ import Lifecycle.Audit
 
 open Verso.Genre Manual
 
-#doc (Manual) "Jakarta Persistence: Entity Instance Lifecycle" =>
+#doc (Manual) "Jakarta Persistence" =>
 
 This book models how construction and lifecycle operations affect an entity's
 state and persistent identity in one persistence context. Sections 2.1 and 2.4
