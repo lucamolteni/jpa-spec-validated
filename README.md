@@ -56,8 +56,6 @@ commentary. These markers do not duplicate the specification or implementation.
 
 The **Check book** workflow checks the proofs, runs the finite model checks,
 and renders the HTML on pushes to `main` and pull requests targeting `main`.
-Gitleaks scans the rendered files for credentials. A finding fails the check
-and blocks publication.
 
 Publication is manual. To release the current book, open **Actions → Publish
 book → Run workflow**, select `main`, and click **Run workflow**. The workflow
