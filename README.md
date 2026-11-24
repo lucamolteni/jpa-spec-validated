@@ -52,20 +52,15 @@ point remains available. `specBoundary` commands mark original passages for
 on-demand HTML review, and `formalization` directives visibly distinguish project
 commentary. These markers do not duplicate the specification or implementation.
 
-## Publish an update
+## Check and publish the book
 
-GitHub Pages serves the root of the `gh-pages` branch. After running the
-model checks, export the book into a fresh directory so the site includes only
-the assets for this edition.
+The **Check book** workflow checks the proofs, runs the finite model checks,
+and renders the HTML on pushes to `main` and pull requests targeting `main`.
 
-```sh
-book_export=$(mktemp -d)
-lake exe generate-book --output "$book_export"
-```
-
-In a separate checkout of `gh-pages`, replace the previous site files with the
-contents of `$book_export/html-single/`. Keep the root `.nojekyll` file so GitHub
-serves the Verso output directly. Commit and push that branch to publish the update.
+Publication is manual. To release the current book, open **Actions → Publish
+book → Run workflow**, select `main`, and click **Run workflow**. The workflow
+checks that revision and deploys its rendered HTML to GitHub Pages after the
+checks pass. [Publish book workflow](https://github.com/lucamolteni/jpa-spec-validated/actions/workflows/publish-book.yml)
 
 ## Live preview
 

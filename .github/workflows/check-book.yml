@@ -1,0 +1,39 @@
+name: Check book
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_call:
+    inputs:
+      upload_book:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install C++ build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld libc++-dev libc++abi-dev
+      - name: Build with the pinned Lean toolchain
+        uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          build: true
+      - name: Run the model checks
+        run: sh scripts/check.sh
+      - name: Render the book
+        run: lake exe generate-book --output "$RUNNER_TEMP/book"
+      - name: Upload the checked book for publication
+        if: inputs.upload_book
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ${{ runner.temp }}/book/html-single
