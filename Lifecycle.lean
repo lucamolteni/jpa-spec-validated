@@ -7,6 +7,61 @@ open Verso.Code.External
 open Verso.Genre Manual
 open Lifecycle.Document
 
+section
+open EntityLifecycle
+open Verso.Genre.Manual.InlineLean
+
+-- The example uses the finite model from Checks. The book renderer places
+-- these checked blocks in the formalization following the persist boundary.
+#docs (Manual) Lifecycle.persistExample "A book becomes managed" :=
+:::::::
+Let {lit}`book` stand for one Java object. The first row pairs construction
+({lit}`Book book = new Book();`) with the phase of that object immediately
+afterward, {lit}`new`. The second row calls {lit}`em.persist(book)` on the
+same reference and expects {lit}`managed`. The Lean proof {lit}`by decide`
+asks Lean to check both rows against the finite model for every allowed
+choice of persistent identity.
+
+```lean
+example : followsPhases book [
+    (.Create book,  .new),
+    (.Persist book, .managed)
+  ] := by decide
+```
+
+To see the phases along one execution, run the calls with {lit}`#eval`.
+In a scratch Lean file in this project, put {lit}`import Lifecycle.Checks`
+on the first line and {lit}`open EntityLifecycle` on the next.
+
+```lean (name := persistPhases)
+#eval showLifecycle book [.Create book, .Persist book]
+```
+
+```leanOutput persistPhases
+new → managed
+```
+
+The Jakarta Persistence TCK checks what {lit}`EntityManager.contains()`
+reports for these cases. It expects {lit}`false` for a newly constructed
+object and {lit}`true` for the reference just passed to {lit}`persist`.
+The two phases above show the corresponding lifecycle states.
+[New object check](https://github.com/jakartaee/persistence/blob/4.0.0-M4/tck/spec-tests/src/main/java/ee/jakarta/tck/persistence/core/entitytest/persist/basic/Client.java#L82-L96)
+· [Check after persist](https://github.com/jakartaee/persistence/blob/4.0.0-M4/tck/spec-tests/src/main/java/ee/jakarta/tck/persistence/core/entitytest/remove/basic/Client.java#L162-L173)
+
+When {lit}`em.persist(book)` is called a second time, the book is already
+managed and stays managed.
+
+```lean (name := repeatedPersistPhases)
+#eval showLifecycle book [.Create book, .Persist book, .Persist book]
+```
+
+```leanOutput repeatedPersistPhases
+new → managed → managed
+```
+:::::::
+
+end
+
 #doc (Manual) "Jakarta Persistence" =>
 
 This book models how construction and lifecycle operations affect an entity's

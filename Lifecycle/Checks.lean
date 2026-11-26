@@ -96,6 +96,61 @@ def labelKey : FiniteLabel → String
   | .Merge e t => s!"Merge({e.val},{t.val})"
 ```
 
+In the §3.6.3 example, {lit}`book` names object 0. We use it as the argument
+to each call and read its lifecycle state afterward.
+
+```lean
+def book : Fin 3 := 0
+```
+
+Given a state and a call, {lit}`callResults` runs Veil's generated action for
+that call. A failed precondition gives an empty list. Each successful choice
+gives a successor state wrapped in {lit}`some`. A choice that produces no
+successor (for example, a failed assertion) gives {lit}`none`.
+
+```lean
+def callResults (s : FiniteState) (call : FiniteLabel) : List (Option FiniteState) :=
+  let runCall := NextAct.extracted _ _ (Fin 3) (Fin 3) phase_IndT call
+  Extract.extractValidStates runCall finiteTheory s
+```
+
+{lit}`followsPhases` starts in Veil's initial states. At each row, the call
+must be available, and every result must have the expected phase for object
+{lit}`e`. The check continues from each successor, so it covers both identities
+that the first persist can assign to the book.
+
+```lean
+def followsPhases (e : Fin 3) (steps : List (FiniteLabel × phase_IndT)) : Bool :=
+  !finiteSystem.initStates.isEmpty && finiteSystem.initStates.all (checkSteps steps)
+where
+  checkSteps : List (FiniteLabel × phase_IndT) → FiniteState → Bool
+    | [], _ => true
+    | (call, expected) :: rest, s =>
+      let results := callResults s call
+      !results.isEmpty && results.all fun
+        | some t => phaseAt t e == expected && checkSteps rest t
+        | none => false
+```
+
+To display one execution, {lit}`showLifecycle` starts in the first initial
+state and takes the first result of each call. It reads the observed phase
+after each step and reports the call if execution cannot continue. Its return
+type, {lit}`IO Unit`, lets it print the phases or report an error.
+
+```lean
+def showLifecycle (e : Fin 3) (calls : List FiniteLabel) : IO Unit := do
+  let some initial := finiteSystem.initStates.head? | throw (IO.userError "No initial state")
+  let mut state := initial
+  let mut phases := #[]
+  for call in calls do
+    let some result := (callResults state call).head?
+      | throw (IO.userError s!"{labelKey call} is unavailable")
+    let some next := result | throw (IO.userError s!"{labelKey call} produced no successor state")
+    phases := phases.push (reprStr (phaseAt next e))
+    state := next
+  IO.println (String.intercalate " → " phases.toList)
+```
+
 We list the three objects and define a Boolean check for context membership.
 It uses the same condition as {lit}`belongsToContext`: an instance has been
 created and is managed or removed. In executable Boolean expressions,
@@ -108,8 +163,7 @@ def inContext (s : FiniteState) (e : Fin 3) : Bool :=
 ```
 
 The helper {lit}`ensure` stops a check with an error message when a condition
-is false. The type {lit}`IO Unit` describes an executable computation with
-effects, such as reporting an error, and no meaningful return value.
+is false.
 
 ```lean
 def ensure (ok : Bool) (message : String) : IO Unit :=
